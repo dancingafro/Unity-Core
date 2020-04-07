@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CustomScript.UI
+namespace CoreScript.UI
 {
     public class UITabGroup : MonoBehaviour
     {

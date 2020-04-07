@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CustomScript.UI
+namespace CoreScript.UI
 {
 
     public class FlexibleUIGrid : LayoutGroup

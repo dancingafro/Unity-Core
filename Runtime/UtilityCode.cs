@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CustomScript.Utility
+namespace CoreScript.Utility
 {
     public static class UtilityCode
     {
