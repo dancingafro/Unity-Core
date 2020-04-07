@@ -19,7 +19,7 @@ namespace CustomScript.UI.Animate
 
         [SerializeField] GameObject objectToAnimate = null;
         [SerializeField] UIAnimateType animateType = UIAnimateType.Move;
-        [SerializeField] LeanTweenType easeType = LeanTweenType.notUsed;
+        [SerializeField] LeanTweenType easeType;
         [SerializeField] float duration = 1, delay = 1;
         [SerializeField] bool loop = false, pingPong = false, startPositionOffset = false;
         [SerializeField] Vector3 from = Vector3.zero, to = Vector3.zero;
