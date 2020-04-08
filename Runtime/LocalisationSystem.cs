@@ -1,23 +1,37 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
-namespace CoreScript.Utility
+namespace CoreScript.Localisation
 {
     public static class LocalisationSystem
     {
-        public enum Language
-        {
-            English,
-            French
-        }
+        public static Languages currentLanguage = null;
 
-        public static Language language = Language.English;
-
-        static Dictionary<Language, string> attributePairs = new Dictionary<Language, string>();
+        static Languages[] languages = null;
         static Dictionary<string, Dictionary<string, string>> localisation;
 
         public static bool isInit = false;
+        static CSVLoader csvLoader;
+
+        public static CSVLoader CSVLoader
+        {
+            get
+            {
+                if (csvLoader == null)
+                    csvLoader = new CSVLoader();
+
+                return csvLoader;
+            }
+        }
+
+        public static Dictionary<string, string> GetDictionary()
+        {
+            Init();
+
+            return localisation[currentLanguage.Key];
+        }
 
         static void Init()
         {
@@ -26,25 +40,71 @@ namespace CoreScript.Utility
 
             isInit = true;
 
-            attributePairs.Add(Language.English, "en");
-            attributePairs.Add(Language.French, "fr");
-
-            CSVLoader csvLoader = new CSVLoader(Resources.Load<TextAsset>("Example").text.Split('\n'));
-
-            localisation = csvLoader.GetDictionaryValues();
-
+            UpdateDictionary();
         }
 
         public static string GetLocalisedValue(string key)
         {
             Init();
 
-            string value = "";
-
-            localisation[attributePairs[language]].TryGetValue(key, out value);
+            localisation[currentLanguage.Key].TryGetValue(key, out string value);
 
             return value;
         }
 
+        public static void RefreshData()
+        {
+            CSVLoader.LoadCSV();
+            UpdateDictionary();
+        }
+
+        static void UpdateDictionary()
+        {
+            languages = Resources.LoadAll<Languages>("Languages");
+
+            foreach (var item in languages)
+            {
+                if (!item.DefaultLanguage)
+                    continue;
+
+                currentLanguage = item;
+                break;
+            }
+
+            localisation = CSVLoader.GetDictionary();
+        }
+
+        public static void Add(string key, string value)
+        {
+            if (value.Contains("\""))
+                value.Replace('"', '\"');
+
+            CSVLoader.LoadCSV();
+            CSVLoader.Add(key, value);
+            CSVLoader.LoadCSV();
+
+            UpdateDictionary();
+        }
+
+        public static void Replace(string key, string value)
+        {
+            if (value.Contains("\""))
+                value.Replace('"', '\"');
+
+            CSVLoader.LoadCSV();
+            CSVLoader.Edit(key, value);
+            CSVLoader.LoadCSV();
+
+            UpdateDictionary();
+        }
+
+        public static void Remove(string key)
+        {
+            CSVLoader.LoadCSV();
+            CSVLoader.Remove(key);
+            CSVLoader.LoadCSV();
+
+            UpdateDictionary();
+        }
     }
 }
