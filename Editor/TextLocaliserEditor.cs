@@ -46,7 +46,7 @@ namespace CoreScript.Localisation
     {
         public static void Open()
         {
-            TextLocaliserEditWindow window = new TextLocaliserEditWindow()
+            TextLocaliserSearchWindow window = new TextLocaliserSearchWindow()
             {
                 titleContent = new GUIContent("Localiser Window")
             };
@@ -58,7 +58,7 @@ namespace CoreScript.Localisation
             window.ShowUtility();
         }
 
-        public string value;
+        public string value = "";
         public Vector2 scroll;
         public Dictionary<string, string> dictionary;
 
@@ -93,8 +93,7 @@ namespace CoreScript.Localisation
                 {
                     EditorGUILayout.BeginHorizontal("Box");
 
-                    Texture closeIcon = Resources.Load<Texture>("CoreScript/Texture/cross");
-                    GUIContent content = new GUIContent(closeIcon);
+                    GUIContent content = new GUIContent(Resources.Load<Texture>("CoreScript/Texture/cross"));
 
                     if (GUILayout.Button(content, GUILayout.MaxWidth(20), GUILayout.MaxHeight(20)))
                     {
@@ -105,7 +104,6 @@ namespace CoreScript.Localisation
                             LocalisationSystem.RefreshData();
                             dictionary = LocalisationSystem.GetDictionary();
                         }
-
                     }
 
                     EditorGUILayout.TextField(item.Key);

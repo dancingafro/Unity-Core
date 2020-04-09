@@ -46,8 +46,7 @@ namespace CoreScript.Localisation
             position.x += position.width + 2;
             position.width = 17;
             position.height = 17;
-            Texture searchIcon = Resources.Load<Texture>("CoreScript/Texture/search"), storeIcon = Resources.Load<Texture>("CoreScript/Texture/store");
-            GUIContent searchContent = new GUIContent(searchIcon);
+            GUIContent searchContent = new GUIContent(Resources.Load<Texture>("CoreScript/Texture/search"));
 
             if (GUI.Button(position, searchContent))
                 TextLocaliserSearchWindow.Open();
@@ -55,7 +54,7 @@ namespace CoreScript.Localisation
             position.x += position.width + 2;
 
 
-            GUIContent storeContent = new GUIContent(storeIcon);
+            GUIContent storeContent = new GUIContent(Resources.Load<Texture>("CoreScript/Texture/store"));
 
             if (GUI.Button(position, storeContent))
                 TextLocaliserEditWindow.Open(key.stringValue);
