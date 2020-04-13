@@ -65,12 +65,15 @@ namespace CoreScript.Utility
             triangles[triangleIndex + 2] = c;
             triangleIndex += 3;
         }
+
         public Mesh CreateMesh()
         {
-            Mesh mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.uv = uv;
+            Mesh mesh = new Mesh
+            {
+                vertices = vertices,
+                triangles = triangles,
+                uv = uv
+            };
             mesh.RecalculateNormals();
             return mesh;
         }

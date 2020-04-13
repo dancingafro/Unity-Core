@@ -101,9 +101,7 @@ namespace CoreScript.Procidual
 
             public void UpdateTerrainChunk()
             {
-                float viewerDstFromNearestEdge = bounds.SqrDistance(viewerPos);
-                bool visible = viewerDstFromNearestEdge <= maxViewDst * maxViewDst;
-                SetVisible(visible);
+                SetVisible(bounds.SqrDistance(viewerPos) <= maxViewDst * maxViewDst);
             }
 
             public void SetVisible(bool visible)

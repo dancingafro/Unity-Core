@@ -67,12 +67,10 @@ namespace CoreScript.Procidual
 
         public void RequestMapData(Action<MapData> callBack)
         {
-            ThreadStart threadStart = delegate
+            new Thread((ThreadStart)delegate
             {
                 MapDataThread(callBack);
-            };
-
-            new Thread(threadStart).Start();
+            }).Start();
         }
 
         void MapDataThread(Action<MapData> callBack)
@@ -84,12 +82,10 @@ namespace CoreScript.Procidual
 
         public void RequestMeshData(MapData mapData, Action<MeshData> callBack)
         {
-            ThreadStart threadStart = delegate
+            new Thread((ThreadStart)delegate
             {
                 MeshDataThread(mapData, callBack);
-            };
-
-            new Thread(threadStart).Start();
+            }).Start();
         }
 
         void MeshDataThread(MapData mapData, Action<MeshData> callBack)
