@@ -12,10 +12,10 @@ namespace CoreScript.Procidual
         {
             MapGenerator mapGenerator = (MapGenerator)target;
             if (DrawDefaultInspector() && mapGenerator.autoUpdate)
-                mapGenerator.GenerateMap();
-            
+                mapGenerator.DrawMapInEditor();
+
             if (GUILayout.Button("Generate"))
-                mapGenerator.GenerateMap();
+                mapGenerator.DrawMapInEditor();
         }
     }
 }

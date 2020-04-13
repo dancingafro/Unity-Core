@@ -64,5 +64,28 @@ namespace CoreScript.Utility
             return textMesh;
         }
 
+        public static Texture2D TextureFromColors(Color[] colors, int width, int height)
+        {
+            Texture2D texture = new Texture2D(width, height);
+            texture.filterMode = FilterMode.Point;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.SetPixels(colors);
+            texture.Apply();
+            return texture;
+        }
+
+        public static Texture2D TextureFromHeight(float[,] heightMap)
+        {
+            int width = heightMap.GetLength(0);
+            int height = heightMap.GetLength(1);
+
+            Color[] colors = new Color[width * height];
+
+            for (int x = 0; x < width; ++x)
+                for (int y = 0; y < height; ++y)
+                    colors[y * width + x] = Color.Lerp(Color.black, Color.white, heightMap[x, y]);
+
+            return TextureFromColors(colors, width, height);
+        }
     }
 }
