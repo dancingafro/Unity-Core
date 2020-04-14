@@ -66,25 +66,6 @@ namespace CoreScript.Factories
 
             return meshData;
         }
-
-        public static float[,] GenerateFalloffMap(int size)
-        {
-            float[,] map = new float[size, size];
-
-            for (int i = 0; i < size; ++i)
-                for (int j = 0; j < size; ++j)
-                    map[i, j] = Evaluate(Mathf.Max(Mathf.Abs(i / (float)size * 2 - 1), Mathf.Abs(j / (float)size * 2 - 1)));
-
-            return map;
-        }
-
-        static float Evaluate(float value)
-        {
-            float a = 3;
-            float b = 2.2f;
-
-            return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
-        }
     }
 
     public class MeshData

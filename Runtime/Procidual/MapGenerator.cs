@@ -51,7 +51,7 @@ namespace CoreScript.Procidual
 
         void Awake()
         {
-            falloffMap = Factory.GenerateFalloffMap(mapChunkSize);
+            falloffMap = Noise.GenerateFalloffMap(mapChunkSize + 2);
         }
 
         public void DrawMapInEditor()
@@ -68,7 +68,7 @@ namespace CoreScript.Procidual
                     display.DrawMesh(Factory.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, heightCurve, editorPreviewLOD), UtilityCode.TextureFromColors(mapData.colourMap, mapChunkSize, mapChunkSize));
                     break;
                 case Drawmode.FalloffMap:
-                    display.DrawTexture(UtilityCode.TextureFromHeight(Factory.GenerateFalloffMap(mapChunkSize)));
+                    display.DrawTexture(UtilityCode.TextureFromHeight(Noise.GenerateFalloffMap(mapChunkSize + 2)));
                     break;
                 default:
                     display.DrawTexture(UtilityCode.TextureFromHeight(mapData.heightMap));
@@ -143,7 +143,7 @@ namespace CoreScript.Procidual
             if (octaves < 0)
                 octaves = 0;
             if (useFalloffMap)
-                falloffMap = Factory.GenerateFalloffMap(mapChunkSize);
+                falloffMap = Noise.GenerateFalloffMap(mapChunkSize + 2);
         }
 
         struct ThreadInfo<T>
