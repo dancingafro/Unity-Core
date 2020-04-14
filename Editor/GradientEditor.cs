@@ -7,7 +7,7 @@ namespace CoreScript.Utility
 {
     public class GradientEditor : EditorWindow
     {
-        public CustomGradient Gradient { private get; set; }
+        public CustomColourGradient Gradient { private get; set; }
         const int borderSize = 10;
         const float keyWidth = 10;
         const float keyHeight = 20;
@@ -35,7 +35,7 @@ namespace CoreScript.Utility
             keysRect = new Rect[Gradient.NumKey];
             for (int i = 0; i < Gradient.NumKey; ++i)
             {
-                CustomGradient.ColorKey key = Gradient.GetKey(i);
+                ColorKey key = Gradient.GetKey(i);
                 keysRect[i] = new Rect(gradientPreviewRect.x + gradientPreviewRect.width * key.Time - keyWidth * .5f, gradientPreviewRect.yMax + borderSize, keyWidth, keyHeight);
 
                 if (i == selectedIndex)
@@ -62,7 +62,7 @@ namespace CoreScript.Utility
             if (EditorGUI.EndChangeCheck())
                 selectedIndex = Gradient.UpdateKeyTime(selectedIndex, newTime);
 
-            Gradient.blendMode = (CustomGradient.BlendMode)EditorGUILayout.EnumPopup("Blend Mode", Gradient.blendMode);
+            Gradient.blendMode = (CustomColourGradient.BlendMode)EditorGUILayout.EnumPopup("Blend Mode", Gradient.blendMode);
 
             Gradient.randomizeColourOnAdd = EditorGUILayout.Toggle("Randomize Colour on Add", Gradient.randomizeColourOnAdd);
 

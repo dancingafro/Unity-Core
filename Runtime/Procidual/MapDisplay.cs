@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CoreScript.Utility;
+using CoreScript.Factories;
 
 namespace CoreScript.Procidual
 {

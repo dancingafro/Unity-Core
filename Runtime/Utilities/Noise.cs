@@ -6,21 +6,32 @@ namespace CoreScript.Utility
 {
     public static class Noise
     {
-        public static float[,] GenerateNoiseMap(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
+        public enum NormalizeMode
+        {
+            Local,
+            Global
+        }
+
+        public static float[,] GenerateNoiseMap(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
         {
             float[,] noiseMap = new float[width, height];
 
             System.Random prng = new System.Random(seed);
             Vector2[] octavesOffsets = new Vector2[octaves];
 
-            for (int i = 0; i < octaves; i++)
-                octavesOffsets[i] = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) + offset;
+            float maxPossibleHeight = 0, amplitude = 1, frequency = 1;
 
+            for (int i = 0; i < octaves; i++)
+            {
+                octavesOffsets[i] = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000)) - offset;
+                maxPossibleHeight += amplitude;
+                amplitude *= persistance;
+            }
 
             if (scale <= 0)
                 scale = 0.0001f;
 
-            float maxNoiseHeight = float.MinValue, minNoiseHeight = float.MaxValue;
+            float maxLocalNoiseHeight = float.MinValue, minLocalNoiseHeight = float.MaxValue;
 
             float halfWidth = width * .5f;
             float halfHeight = height * .5f;
@@ -29,12 +40,14 @@ namespace CoreScript.Utility
             {
                 for (int y = 0; y < height; ++y)
                 {
-                    float amplitude = 1, frequency = 1, noiseHeight = 0;
+                    amplitude = 1;
+                    frequency = 1;
+                    float noiseHeight = 0;
 
                     for (int i = 0; i < octaves; i++)
                     {
-                        float sampleX = (x - halfWidth) / scale * frequency + octavesOffsets[i].x;
-                        float sampleY = (y - halfHeight) / scale * frequency + octavesOffsets[i].y;
+                        float sampleX = (x - halfWidth + octavesOffsets[i].x) / scale * frequency;
+                        float sampleY = (y - halfHeight + octavesOffsets[i].y) / scale * frequency;
 
                         float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
                         noiseHeight += perlinValue * amplitude;
@@ -43,10 +56,10 @@ namespace CoreScript.Utility
                         frequency *= lacunarity;
                     }
 
-                    if (minNoiseHeight > noiseHeight)
-                        minNoiseHeight = noiseHeight;
-                    else if (maxNoiseHeight < noiseHeight)
-                        maxNoiseHeight = noiseHeight;
+                    if (minLocalNoiseHeight > noiseHeight)
+                        minLocalNoiseHeight = noiseHeight;
+                    else if (maxLocalNoiseHeight < noiseHeight)
+                        maxLocalNoiseHeight = noiseHeight;
 
                     noiseMap[x, y] = noiseHeight;
                 }
@@ -56,7 +69,15 @@ namespace CoreScript.Utility
             {
                 for (int y = 0; y < height; y++)
                 {
-                    noiseMap[x, y] = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]);
+                    switch (normalizeMode)
+                    {
+                        case NormalizeMode.Global:
+                            noiseMap[x, y] = Mathf.Clamp((noiseMap[x, y] + 1) / maxPossibleHeight, 0, int.MaxValue);
+                            break;
+                        default:
+                            noiseMap[x, y] = Mathf.InverseLerp(minLocalNoiseHeight, maxLocalNoiseHeight, noiseMap[x, y]);
+                            break;
+                    }
                 }
             }
 

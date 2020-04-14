@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Threading;
 using UnityEngine;
+using CoreScript.Factories;
 using CoreScript.Utility;
 
 namespace CoreScript.Procidual
@@ -13,15 +14,16 @@ namespace CoreScript.Procidual
         {
             NoiseMap,
             ColorMap,
-            Mesh
+            Mesh,
+            FalloffMap
         }
-
         public Drawmode drawmode;
+        public Noise.NormalizeMode normalizeMode;
 
-        public const int mapChunkSize = 241;
+        public const int mapChunkSize = 239;
 
         [Range(0, 6)]
-        public int levelOfDetail;
+        public int editorPreviewLOD;
 
         public float noiseScale = 0.3f;
 
@@ -33,64 +35,73 @@ namespace CoreScript.Procidual
         public int seed = 0;
         public Vector2 offset = Vector2.zero;
 
+        public bool useFalloffMap = false;
+
         public float meshHeightMultiplier = 1;
         public AnimationCurve heightCurve;
 
         public bool autoUpdate = false;
 
-        public CustomGradient regions;
+        public CustomColourGradient regions;
+
+        float[,] falloffMap;
 
         Queue<ThreadInfo<MapData>> mapThreadInfoQueue = new Queue<ThreadInfo<MapData>>();
         Queue<ThreadInfo<MeshData>> meshThreadInfoQueue = new Queue<ThreadInfo<MeshData>>();
 
+        void Awake()
+        {
+            falloffMap = Factory.GenerateFalloffMap(mapChunkSize);
+        }
+
         public void DrawMapInEditor()
         {
-            MapData mapData = GenerateMapData();
+            MapData mapData = GenerateMapData(Vector2.zero);
             MapDisplay display = FindObjectOfType<MapDisplay>();
-            Texture2D texture;
 
             switch (drawmode)
             {
                 case Drawmode.ColorMap:
-                    texture = UtilityCode.TextureFromColors(mapData.colourMap, mapChunkSize, mapChunkSize);
-                    display.DrawTexture(texture);
+                    display.DrawTexture(UtilityCode.TextureFromColors(mapData.colourMap, mapChunkSize, mapChunkSize));
                     break;
                 case Drawmode.Mesh:
-                    display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, heightCurve, levelOfDetail), UtilityCode.TextureFromColors(mapData.colourMap, mapChunkSize, mapChunkSize));
+                    display.DrawMesh(Factory.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, heightCurve, editorPreviewLOD), UtilityCode.TextureFromColors(mapData.colourMap, mapChunkSize, mapChunkSize));
+                    break;
+                case Drawmode.FalloffMap:
+                    display.DrawTexture(UtilityCode.TextureFromHeight(Factory.GenerateFalloffMap(mapChunkSize)));
                     break;
                 default:
-                    texture = UtilityCode.TextureFromHeight(mapData.heightMap);
-                    display.DrawTexture(texture);
+                    display.DrawTexture(UtilityCode.TextureFromHeight(mapData.heightMap));
                     break;
             }
         }
 
-        public void RequestMapData(Action<MapData> callBack)
+        public void RequestMapData(Vector2 centre, Action<MapData> callBack)
         {
             new Thread((ThreadStart)delegate
             {
-                MapDataThread(callBack);
+                MapDataThread(centre, callBack);
             }).Start();
         }
 
-        void MapDataThread(Action<MapData> callBack)
+        void MapDataThread(Vector2 centre, Action<MapData> callBack)
         {
-            MapData mapData = GenerateMapData();
+            MapData mapData = GenerateMapData(centre);
             lock (mapThreadInfoQueue)
                 mapThreadInfoQueue.Enqueue(new ThreadInfo<MapData>(callBack, mapData));
         }
 
-        public void RequestMeshData(MapData mapData, Action<MeshData> callBack)
+        public void RequestMeshData(MapData mapData, int lod, Action<MeshData> callBack)
         {
             new Thread((ThreadStart)delegate
             {
-                MeshDataThread(mapData, callBack);
+                MeshDataThread(mapData, lod, callBack);
             }).Start();
         }
 
-        void MeshDataThread(MapData mapData, Action<MeshData> callBack)
+        void MeshDataThread(MapData mapData, int lod, Action<MeshData> callBack)
         {
-            MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, heightCurve, levelOfDetail);
+            MeshData meshData = Factory.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, heightCurve, lod);
             lock (meshThreadInfoQueue)
                 meshThreadInfoQueue.Enqueue(new ThreadInfo<MeshData>(callBack, meshData));
         }
@@ -104,15 +115,22 @@ namespace CoreScript.Procidual
                 meshThreadInfoQueue.Dequeue().Invoke();
         }
 
-        MapData GenerateMapData()
+        MapData GenerateMapData(Vector2 centre)
         {
-            float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
+            float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
 
             Color[] colors = new Color[mapChunkSize * mapChunkSize];
 
             for (int x = 0; x < mapChunkSize; ++x)
+            {
                 for (int y = 0; y < mapChunkSize; ++y)
+                {
+                    if (useFalloffMap)
+                        noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
+
                     colors[y * mapChunkSize + x] = regions.Evaluate(Mathf.InverseLerp(0, 1, noiseMap[x, y]));
+                }
+            }
             return new MapData(noiseMap, colors);
         }
 
@@ -124,6 +142,8 @@ namespace CoreScript.Procidual
                 meshHeightMultiplier = 1;
             if (octaves < 0)
                 octaves = 0;
+            if (useFalloffMap)
+                falloffMap = Factory.GenerateFalloffMap(mapChunkSize);
         }
 
         struct ThreadInfo<T>

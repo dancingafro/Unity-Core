@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace CoreScript.Utility
 {
-    [CustomPropertyDrawer(typeof(CustomGradient))]
+    [CustomPropertyDrawer(typeof(CustomColourGradient))]
     public class GradientDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             Event guiEvent = Event.current;
-            CustomGradient gradient = (CustomGradient)fieldInfo.GetValue(property.serializedObject.targetObject);
+            CustomColourGradient gradient = (CustomColourGradient)fieldInfo.GetValue(property.serializedObject.targetObject);
 
             float labelWidth = GUI.skin.label.CalcSize(label).x + 5;
             Rect textureRect = new Rect(position.x + labelWidth, position.y, position.width - labelWidth, position.height);

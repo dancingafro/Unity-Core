@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CoreScript.Utility
 {
     [System.Serializable]
-    public class CustomGradient
+    public class CustomColourGradient : IGradient<ColorKey>
     {
         public enum BlendMode
         {
@@ -18,7 +18,7 @@ namespace CoreScript.Utility
         [SerializeField]
         List<ColorKey> keys = new List<ColorKey>();
 
-        public CustomGradient()
+        public CustomColourGradient()
         {
             AddKey(Color.white, 0);
             AddKey(Color.black, 1);
@@ -120,25 +120,39 @@ namespace CoreScript.Utility
 
             return UtilityCode.TextureFromColors(colors, width, 1);
         }
+    }
 
-        [System.Serializable]
-        public struct ColorKey
+    public interface IGradient<T>
+    {
+        int AddKey(Color colour, float time, string name = "");
+        int AddKey(T colorKey);
+        void RemoveKey(int index);
+        int UpdateKeyTime(int index, float time);
+        void UpdateKeyName(int index, string name);
+        void UpdateKeyColor(int index, Color colour);
+        int UpdateKey(int index, Color colour, float time, string name = "");
+        Color Evaluate(float time);
+        T GetKey(int index);
+        Texture2D GetTexture(int width);
+    }
+
+    [System.Serializable]
+    public struct ColorKey
+    {
+        [SerializeField] string name;
+        [SerializeField] Color colour;
+        [SerializeField] float time;
+
+        public ColorKey(Color colour, float time, string name = "")
         {
-            [SerializeField] string name;
-            [SerializeField] Color colour;
-            [SerializeField] float time;
-
-            public ColorKey(Color colour, float time, string name = "")
-            {
-                this.name = name;
-                this.colour = colour;
-                this.time = time;
-            }
-
-            public Color Colour { get { return colour; } }
-            public float Time { get { return time; } }
-            public string Name { get { return name; } }
+            this.name = name;
+            this.colour = colour;
+            this.time = time;
         }
+
+        public Color Colour { get { return colour; } }
+        public float Time { get { return time; } }
+        public string Name { get { return name; } }
     }
 
 }
