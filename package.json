@@ -1,11 +1,9 @@
 {
   "name": "com.desmond.corescript",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "displayName": "Custom Core Script",
-  "description": "Core Script included UI, UI Animation,Utilities",
-  "unity": "2018.4",
-  "unityRelease": "0f1",
-  "dependencies": {},
+  "description": "Core Script included:\n\tUI\n\tUI Animation\n\t\n\tUtilities",
+  "unity": "2017.1",
   "keywords": [
     "UI",
     "UIAnimation",
@@ -15,5 +13,6 @@
     "name": "Desmond Peh",
     "email": "desmondpehhanyong@gmail.com",
     "url": ""
-  }
+  },
+  "hideInEditor": false
 }
