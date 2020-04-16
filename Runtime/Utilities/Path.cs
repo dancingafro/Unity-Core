@@ -18,67 +18,38 @@ namespace CoreScript.Utility
         public Path(Vector2 centre)
         {
             points = new List<Vector2>
-        {
-            centre+Vector2.left,
-            centre+(Vector2.left+Vector2.up)*.5f,
-            centre + (Vector2.right+Vector2.down)*.5f,
-            centre + Vector2.right
-        };
+            {
+                centre + Vector2.left,
+                centre + (Vector2.left + Vector2.up) * .5f,
+                centre + (Vector2.right + Vector2.down) * .5f,
+                centre + Vector2.right
+            };
         }
 
-        public Vector2 this[int i]
-        {
-            get
-            {
-                return points[i];
-            }
-        }
+        public Vector2 this[int i] { get { return points[i]; } }
 
         public bool AutoSetControlPoints
         {
-            get
-            {
-                return autoSetControlPoints;
-            }
+            get { return autoSetControlPoints; }
             set
             {
-                if (autoSetControlPoints != value)
-                {
-                    autoSetControlPoints = value;
-                    if (autoSetControlPoints)
-                    {
-                        AutoSetAllControlPoints();
-                    }
-                }
+                autoSetControlPoints = value;
+                if (autoSetControlPoints)
+                    AutoSetAllControlPoints();
             }
         }
 
-        public int NumPoints
-        {
-            get
-            {
-                return points.Count;
-            }
-        }
-
-        public int NumSegments
-        {
-            get
-            {
-                return points.Count / 3;
-            }
-        }
+        public int NumPoints { get { return points.Count; } }
+        public int NumSegments { get { return points.Count / 3; } }
 
         public void AddSegment(Vector2 anchorPos)
         {
-            points.Add(points[points.Count - 1] * 2 - points[points.Count - 2]);
-            points.Add((points[points.Count - 1] + anchorPos) * .5f);
+            points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
+            points.Add((points[NumPoints - 1] + anchorPos) * .5f);
             points.Add(anchorPos);
 
             if (autoSetControlPoints)
-            {
-                AutoSetAllAffectedControlPoints(points.Count - 1);
-            }
+                AutoSetAllAffectedControlPoints(NumPoints - 1);
         }
 
         public Vector2[] GetPointsInSegment(int i)
@@ -90,42 +61,39 @@ namespace CoreScript.Utility
         {
             Vector2 deltaMove = pos - points[i];
 
-            if (i % 3 == 0 || !autoSetControlPoints)
+            if (i % 3 != 0 && autoSetControlPoints)
+                return;
+
+            points[i] = pos;
+
+            if (autoSetControlPoints)
             {
-                points[i] = pos;
+                AutoSetAllAffectedControlPoints(i);
+                return;
+            }
 
-                if (autoSetControlPoints)
+            if (i % 3 == 0)
+            {
+                if (i + 1 < NumPoints || isClosed)
                 {
-                    AutoSetAllAffectedControlPoints(i);
+                    points[LoopIndex(i + 1)] += deltaMove;
                 }
-                else
+                if (i - 1 >= 0 || isClosed)
                 {
-
-                    if (i % 3 == 0)
-                    {
-                        if (i + 1 < points.Count || isClosed)
-                        {
-                            points[LoopIndex(i + 1)] += deltaMove;
-                        }
-                        if (i - 1 >= 0 || isClosed)
-                        {
-                            points[LoopIndex(i - 1)] += deltaMove;
-                        }
-                    }
-                    else
-                    {
-                        bool nextPointIsAnchor = (i + 1) % 3 == 0;
-                        int correspondingControlIndex = (nextPointIsAnchor) ? i + 2 : i - 2;
-                        int anchorIndex = (nextPointIsAnchor) ? i + 1 : i - 1;
-
-                        if (correspondingControlIndex >= 0 && correspondingControlIndex < points.Count || isClosed)
-                        {
-                            float dst = (points[LoopIndex(anchorIndex)] - points[LoopIndex(correspondingControlIndex)]).magnitude;
-                            Vector2 dir = (points[LoopIndex(anchorIndex)] - pos).normalized;
-                            points[LoopIndex(correspondingControlIndex)] = points[LoopIndex(anchorIndex)] + dir * dst;
-                        }
-                    }
+                    points[LoopIndex(i - 1)] += deltaMove;
                 }
+                return;
+            }
+
+            bool nextPointIsAnchor = (i + 1) % 3 == 0;
+            int correspondingControlIndex = (nextPointIsAnchor) ? i + 2 : i - 2;
+            int anchorIndex = (nextPointIsAnchor) ? i + 1 : i - 1;
+
+            if (correspondingControlIndex >= 0 && correspondingControlIndex < NumPoints || isClosed)
+            {
+                float dst = (points[LoopIndex(anchorIndex)] - points[LoopIndex(correspondingControlIndex)]).magnitude;
+                Vector2 dir = (points[LoopIndex(anchorIndex)] - pos).normalized;
+                points[LoopIndex(correspondingControlIndex)] = points[LoopIndex(anchorIndex)] + dir * dst;
             }
         }
 
@@ -135,32 +103,27 @@ namespace CoreScript.Utility
 
             if (isClosed)
             {
-                points.Add(points[points.Count - 1] * 2 - points[points.Count - 2]);
+                points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
                 points.Add(points[0] * 2 - points[1]);
                 if (autoSetControlPoints)
                 {
                     AutoSetAnchorControlPoints(0);
-                    AutoSetAnchorControlPoints(points.Count - 3);
+                    AutoSetAnchorControlPoints(NumPoints - 3);
                 }
+                return;
             }
-            else
-            {
-                points.RemoveRange(points.Count - 2, 2);
-                if (autoSetControlPoints)
-                {
-                    AutoSetStartAndEndControls();
-                }
-            }
+
+            points.RemoveRange(NumPoints - 2, 2);
+            if (autoSetControlPoints)
+                AutoSetStartAndEndControls();
         }
 
         void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
         {
             for (int i = updatedAnchorIndex - 3; i <= updatedAnchorIndex + 3; i += 3)
             {
-                if (i >= 0 && i < points.Count || isClosed)
-                {
+                if (i >= 0 && i < NumPoints || isClosed)
                     AutoSetAnchorControlPoints(LoopIndex(i));
-                }
             }
 
             AutoSetStartAndEndControls();
@@ -168,10 +131,8 @@ namespace CoreScript.Utility
 
         void AutoSetAllControlPoints()
         {
-            for (int i = 0; i < points.Count; i += 3)
-            {
+            for (int i = 0; i < NumPoints; i += 3)
                 AutoSetAnchorControlPoints(i);
-            }
 
             AutoSetStartAndEndControls();
         }
@@ -200,25 +161,23 @@ namespace CoreScript.Utility
             for (int i = 0; i < 2; i++)
             {
                 int controlIndex = anchorIndex + i * 2 - 1;
-                if (controlIndex >= 0 && controlIndex < points.Count || isClosed)
-                {
+                if (controlIndex >= 0 && controlIndex < NumPoints || isClosed)
                     points[LoopIndex(controlIndex)] = anchorPos + dir * neighbourDistances[i] * .5f;
-                }
             }
         }
 
         void AutoSetStartAndEndControls()
         {
-            if (!isClosed)
-            {
-                points[1] = (points[0] + points[2]) * .5f;
-                points[points.Count - 2] = (points[points.Count - 1] + points[points.Count - 3]) * .5f;
-            }
+            if (isClosed)
+                return;
+
+            points[1] = (points[0] + points[2]) * .5f;
+            points[NumPoints - 2] = (points[NumPoints - 1] + points[NumPoints - 3]) * .5f;
         }
 
         int LoopIndex(int i)
         {
-            return (i + points.Count) % points.Count;
+            return (i + NumPoints) % NumPoints;
         }
 
     }
