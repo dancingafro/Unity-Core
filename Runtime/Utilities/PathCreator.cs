@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathCreator : MonoBehaviour
+namespace CoreScript.Utility
 {
-    [HideInInspector]
-    public Path path;
-
-    public void CreatePath()
+    public class PathCreator : MonoBehaviour
     {
-        path = new Path(transform.position);
+        [HideInInspector]
+        public Path path;
+
+        public void CreatePath()
+        {
+            path = new Path(transform.position);
+        }
     }
 }
