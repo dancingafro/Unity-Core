@@ -28,6 +28,30 @@ namespace CoreScript.Utility
 
         public Vector2 this[int i] { get { return points[i]; } }
 
+        public bool IsClosed
+        {
+            get { return isClosed; }
+            set
+            {
+                isClosed = value;
+
+                if (isClosed)
+                {
+                    points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
+                    points.Add(points[0] * 2 - points[1]);
+                    if (autoSetControlPoints)
+                    {
+                        AutoSetAnchorControlPoints(0);
+                        AutoSetAnchorControlPoints(NumPoints - 3);
+                    }
+                    return;
+                }
+
+                points.RemoveRange(NumPoints - 2, 2);
+                if (autoSetControlPoints)
+                    AutoSetStartAndEndControls();
+            }
+        }
         public bool AutoSetControlPoints
         {
             get { return autoSetControlPoints; }
@@ -50,6 +74,36 @@ namespace CoreScript.Utility
 
             if (autoSetControlPoints)
                 AutoSetAllAffectedControlPoints(NumPoints - 1);
+        }
+
+        public void SplitSegment(Vector2 anchorPos, int segmentIndex)
+        {
+            points.InsertRange(segmentIndex * 3 + 2, new Vector2[] { Vector2.zero, anchorPos, Vector2.zero });
+            if (autoSetControlPoints)
+            {
+                AutoSetAllAffectedControlPoints(segmentIndex * 3 + 3);
+                return;
+            }
+            AutoSetAnchorControlPoints(segmentIndex * 3 + 3);
+        }
+
+        public void DeleteSegment(int anchorIndex)
+        {
+            if (NumSegments < 2)
+                return;
+
+            if (anchorIndex == 0)
+            {
+                if (isClosed)
+                    points[NumPoints - 1] = points[2];
+
+                points.RemoveRange(0, 3);
+            }
+            else if (!isClosed && anchorIndex == NumPoints - 1)
+                points.RemoveRange(anchorIndex - 2, 3);
+            else
+                points.RemoveRange(anchorIndex - 1, 3);
+
         }
 
         public Vector2[] GetPointsInSegment(int i)
@@ -97,25 +151,14 @@ namespace CoreScript.Utility
             }
         }
 
-        public void ToggleClosed()
+        public Vector2[] CalculateEvenlySpacedPoints(float spacing, float res = 1f)
         {
-            isClosed = !isClosed;
-
-            if (isClosed)
+            List<Vector2> evelySpacePoint = new List<Vector2>
             {
-                points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
-                points.Add(points[0] * 2 - points[1]);
-                if (autoSetControlPoints)
-                {
-                    AutoSetAnchorControlPoints(0);
-                    AutoSetAnchorControlPoints(NumPoints - 3);
-                }
-                return;
-            }
+                points[0]
+            };
 
-            points.RemoveRange(NumPoints - 2, 2);
-            if (autoSetControlPoints)
-                AutoSetStartAndEndControls();
+            return evelySpacePoint.ToArray();
         }
 
         void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
