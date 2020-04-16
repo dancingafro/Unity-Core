@@ -153,12 +153,40 @@ namespace CoreScript.Utility
 
         public Vector2[] CalculateEvenlySpacedPoints(float spacing, float res = 1f)
         {
-            List<Vector2> evelySpacePoint = new List<Vector2>
+            List<Vector2> evenlySpacePoint = new List<Vector2>
             {
                 points[0]
             };
 
-            return evelySpacePoint.ToArray();
+            Vector2 previousPoint = points[0];
+            float dstSinceLastEvenPoint = 0;
+            for (int segmetIndex = 0; segmetIndex < NumSegments; segmetIndex++)
+            {
+                Vector2[] pts = GetPointsInSegment(segmetIndex);
+                float controlNetLength = (pts[0] - pts[1]).magnitude + (pts[1] - pts[2]).magnitude + (pts[2] - pts[3]).magnitude;
+                float estimatedCurveLegth = (pts[0] - pts[3]).magnitude + controlNetLength * .5f;
+                int division = Mathf.CeilToInt(estimatedCurveLegth * res * 10);
+                float t = 0;
+                while (t <= 0)
+                {
+                    t += 1f / division;
+                    Vector2 pointOnCurve = Bezier.CubicLerp(pts, t);
+                    dstSinceLastEvenPoint += (previousPoint - pointOnCurve).magnitude;
+                    while (dstSinceLastEvenPoint >= spacing)
+                    {
+                        float overShotDst = dstSinceLastEvenPoint - spacing;
+                        Vector2 newEvenlySpacePoint = pointOnCurve + (previousPoint - pointOnCurve).normalized * overShotDst;
+                        evenlySpacePoint.Add(newEvenlySpacePoint);
+                        dstSinceLastEvenPoint = overShotDst;
+                        previousPoint = newEvenlySpacePoint;
+                    }
+
+                    previousPoint = pointOnCurve;
+
+                }
+            }
+
+            return evenlySpacePoint.ToArray();
         }
 
         void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
