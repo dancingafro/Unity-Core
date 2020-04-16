@@ -27,7 +27,7 @@ namespace CoreScript.SaveLoad
         {
             get
             {
-                string SaveFileDirectory = Path.Combine(Application.persistentDataPath, "Save Files/");
+                string SaveFileDirectory = System.IO.Path.Combine(Application.persistentDataPath, "Save Files/");
                 if (!Directory.Exists(SaveFileDirectory))
                     Directory.CreateDirectory(SaveFileDirectory);
 
@@ -38,7 +38,7 @@ namespace CoreScript.SaveLoad
         {
             get
             {
-                string AutoSaveFileDirectory = Path.Combine(SaveFileDirectory, "Auto Save/");
+                string AutoSaveFileDirectory = System.IO.Path.Combine(SaveFileDirectory, "Auto Save/");
                 if (!Directory.Exists(AutoSaveFileDirectory))
                     Directory.CreateDirectory(AutoSaveFileDirectory);
 
