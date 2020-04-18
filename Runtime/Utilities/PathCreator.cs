@@ -19,7 +19,7 @@ namespace CoreScript.Utility
 
         public void CreatePath()
         {
-            path = new Path(transform.position, transform.rotation);
+            path = new Path(transform.position);
         }
 
         void Reset()

@@ -17,16 +17,6 @@ namespace CoreScript.Utility
         int selectedIndex = 0;
         Event guiEvent;
         Rect gradientPreviewRect;
-
-        private void OnEnable()
-        {
-            selectedIndex = 0;
-            titleContent.text = "Gradient Editor";
-            position.Set(position.x, position.y, 400, 150);
-            minSize = new Vector2(200, 200);
-            maxSize = new Vector2(1920, 200);
-        }
-
         private void OnGUI()
         {
             Draw();
@@ -56,20 +46,24 @@ namespace CoreScript.Utility
 
             Rect settingRect = new Rect(borderSize, keysRect[0].yMax + borderSize, position.width - borderSize * 2, position.height);
             GUILayout.BeginArea(settingRect);
-            
+
+            EditorGUI.BeginChangeCheck();
             string newName = EditorGUILayout.TextField(Gradient.GetKey(selectedIndex).Name);
-            if (Gradient.GetKey(selectedIndex).Name != newName)
+            if (EditorGUI.EndChangeCheck())
                 Gradient.UpdateKeyName(selectedIndex, newName);
 
+            EditorGUI.BeginChangeCheck();
             Color newColour = EditorGUILayout.ColorField(Gradient.GetKey(selectedIndex).Colour);
-            if (Gradient.GetKey(selectedIndex).Colour != newColour)
+            if (EditorGUI.EndChangeCheck())
                 Gradient.UpdateKeyColor(selectedIndex, newColour);
 
+            EditorGUI.BeginChangeCheck();
             float newTime = EditorGUILayout.FloatField(Gradient.GetKey(selectedIndex).Time);
-            if (Gradient.GetKey(selectedIndex).Time != newTime)
+            if (EditorGUI.EndChangeCheck())
                 selectedIndex = Gradient.UpdateKeyTime(selectedIndex, newTime);
 
             Gradient.blendMode = (CustomColourGradient.BlendMode)EditorGUILayout.EnumPopup("Blend Mode", Gradient.blendMode);
+
             Gradient.randomizeColourOnAdd = EditorGUILayout.Toggle("Randomize Colour on Add", Gradient.randomizeColourOnAdd);
 
             GUILayout.EndArea();
@@ -134,6 +128,15 @@ namespace CoreScript.Utility
         bool IsEventType(EventType type)
         {
             return guiEvent.type == type;
+        }
+
+        private void OnEnable()
+        {
+            selectedIndex = 0;
+            titleContent.text = "Gradient Editor";
+            position.Set(position.x, position.y, 400, 150);
+            minSize = new Vector2(200, 200);
+            maxSize = new Vector2(1920, 200);
         }
 
         private void OnDisable()
