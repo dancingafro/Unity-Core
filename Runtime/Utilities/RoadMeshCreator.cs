@@ -54,13 +54,13 @@ namespace CoreScript.Utility
         public void UpdateRoad()
         {
             Path path = PathCreator.path;
-            Vector3[] points = path.CalculateEvenlySpacedPoints(spacing);
-            MeshFilter.mesh = CreateRoadMesh(points, path.IsClosed);
-            int textureRepeat = Mathf.RoundToInt(tiling * points.Length * spacing * .05f);
+            OrientedPoint[] orientedPoints = path.CalculateEvenlySpacedPoints(spacing);
+            MeshFilter.mesh = CreateRoadMesh(orientedPoints, path.IsClosed);
+            int textureRepeat = Mathf.RoundToInt(tiling * orientedPoints.Length * spacing * .05f);
             MeshRenderer.sharedMaterial.mainTextureScale = new Vector2(1, textureRepeat);
         }
 
-        Mesh CreateRoadMesh(Vector3[] points, bool isClosed)
+        Mesh CreateRoadMesh(OrientedPoint[] points, bool isClosed)
         {
             Vector3[] verts = new Vector3[points.Length * 2];
             Vector2[] uvs = new Vector2[verts.Length];
@@ -74,15 +74,15 @@ namespace CoreScript.Utility
                 Vector3 forward = Vector3.zero;
 
                 if (i < points.Length - 1 || isClosed)
-                    forward += points[(i + 1) % points.Length] - points[i];
+                    forward += points[(i + 1) % points.Length].Position - points[i].Position;
                 if (i > 0)
-                    forward += points[i] - points[(i - 1 + points.Length) % points.Length];
+                    forward += points[i].Position - points[(i - 1 + points.Length) % points.Length].Position;
 
                 forward.Normalize();
                 Vector3 left = new Vector2(-forward.y, forward.x);
 
-                verts[vertIndex] = points[i] + left * scale * .5f;
-                verts[vertIndex + 1] = points[i] - left * scale * .5f;
+                verts[vertIndex] = points[i].Position + left * scale * .5f;
+                verts[vertIndex + 1] = points[i].Position - left * scale * .5f;
 
                 float completionPercent = i / (float)(points.Length - 1);
                 float v = 1 - Mathf.Abs(2 * completionPercent - 1);
@@ -113,9 +113,9 @@ namespace CoreScript.Utility
 
         public struct ExtrudeShape
         {
-           public Vector2[] verts;
-           public Vector2[] normals;
-           public Vector2[] uvs;
+            public Vector2[] verts;
+            public Vector2[] normals;
+            public Vector2[] uvs;
         }
     }
 }

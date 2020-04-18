@@ -4,41 +4,72 @@ using UnityEngine;
 
 namespace CoreScript.Utility
 {
+    public struct OrientedPoint
+    {
+        public Vector3 Position { get; set; }
+        public Quaternion Rotation { get; set; }
+
+        public OrientedPoint(Vector3 position, Quaternion rotation)
+        {
+            Position = position;
+            Rotation = rotation;
+        }
+
+        public Vector3 LocalToWorld(Vector3 point)
+        {
+            return Position + Rotation * point;
+        }
+
+        public Vector3 WorldToLocal(Vector3 point)
+        {
+            return Quaternion.Inverse(Rotation) * (point - Position);
+        }
+
+        public Vector3 LocalToWorldDirection(Vector3 dir)
+        {
+            return Rotation * dir;
+        }
+    }
+
     [System.Serializable]
     public class Path
     {
+        public enum ControlModeOption { Aligned, Mirrored, Free, Automatic };
+
         [SerializeField, HideInInspector]
-        List<Vector2> points;
+        List<OrientedPoint> points;
         [SerializeField, HideInInspector]
         bool isClosed;
         [SerializeField, HideInInspector]
-        bool autoSetControlPoints;
+        ControlModeOption controlMode;
 
-        public Path(Vector2 centre)
+        public Path(Vector3 centre, Quaternion rotation)
         {
-            points = new List<Vector2>
+            points = new List<OrientedPoint>
             {
-                centre + Vector2.left,
-                centre + (Vector2.left + Vector2.up) * .5f,
-                centre + (Vector2.right + Vector2.down) * .5f,
-                centre + Vector2.right
+               new OrientedPoint( centre + Vector3.left,rotation),
+                new OrientedPoint( centre + (Vector3.left + Vector3.up) * .5f,rotation),
+               new OrientedPoint(  centre + (Vector3.right + Vector3.down) * .5f,rotation),
+               new OrientedPoint(  centre + Vector3.right,rotation)
             };
         }
 
-        public Vector2 this[int i] { get { return points[i]; } }
+        public OrientedPoint this[int i] { get { return points[i]; } }
 
         public bool IsClosed
         {
             get { return isClosed; }
             set
             {
+                if (isClosed == value)
+                    return;
                 isClosed = value;
 
                 if (isClosed)
                 {
-                    points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
-                    points.Add(points[0] * 2 - points[1]);
-                    if (autoSetControlPoints)
+                    points.Add(new OrientedPoint(points[NumPoints - 1].Position * 2 - points[NumPoints - 2].Position, Quaternion.identity));
+                    points.Add(new OrientedPoint(points[0].Position * 2 - points[1].Position, Quaternion.identity));
+                    if (controlMode == ControlModeOption.Automatic)
                     {
                         AutoSetAnchorControlPoints(0);
                         AutoSetAnchorControlPoints(NumPoints - 3);
@@ -47,43 +78,38 @@ namespace CoreScript.Utility
                 }
 
                 points.RemoveRange(NumPoints - 2, 2);
-                if (autoSetControlPoints)
+                if (controlMode == ControlModeOption.Automatic)
                     AutoSetStartAndEndControls();
             }
         }
-        public bool AutoSetControlPoints
+        public ControlModeOption ControlMode
         {
-            get { return autoSetControlPoints; }
+            get { return controlMode; }
             set
             {
-                autoSetControlPoints = value;
-                if (autoSetControlPoints)
-                    AutoSetAllControlPoints();
+                if (controlMode == value)
+                    return;
+
+                controlMode = value;
+                ControlModeOptionChange();
             }
         }
 
         public int NumPoints { get { return points.Count; } }
         public int NumSegments { get { return points.Count / 3; } }
 
-        public void AddSegment(Vector2 anchorPos)
+        public void AddSegment(Vector3 anchorPos)
         {
-            points.Add(points[NumPoints - 1] * 2 - points[NumPoints - 2]);
-            points.Add((points[NumPoints - 1] + anchorPos) * .5f);
-            points.Add(anchorPos);
-
-            if (autoSetControlPoints)
-                AutoSetAllAffectedControlPoints(NumPoints - 1);
+            points.Add(new OrientedPoint(points[NumPoints - 1].Position * 2 - points[NumPoints - 2].Position, Quaternion.identity));
+            points.Add(new OrientedPoint((points[NumPoints - 1].Position + anchorPos) * .5f, Quaternion.identity));
+            points.Add(new OrientedPoint(anchorPos, Quaternion.identity));
+            ControlModeOptionChange();
         }
 
-        public void SplitSegment(Vector2 anchorPos, int segmentIndex)
+        public void SplitSegment(Vector3 anchorPos, int segmentIndex)
         {
-            points.InsertRange(segmentIndex * 3 + 2, new Vector2[] { Vector2.zero, anchorPos, Vector2.zero });
-            if (autoSetControlPoints)
-            {
-                AutoSetAllAffectedControlPoints(segmentIndex * 3 + 3);
-                return;
-            }
-            AutoSetAnchorControlPoints(segmentIndex * 3 + 3);
+            points.InsertRange(segmentIndex * 3 + 2, new OrientedPoint[] { new OrientedPoint(Vector3.zero, Quaternion.identity), new OrientedPoint(anchorPos, Quaternion.identity), new OrientedPoint(Vector3.zero, Quaternion.identity) });
+            ControlModeOptionChange();
         }
 
         public void DeleteSegment(int anchorIndex)
@@ -105,87 +131,167 @@ namespace CoreScript.Utility
 
         }
 
-        public Vector2[] GetPointsInSegment(int i)
+        public OrientedPoint[] GetPointsInSegment(int i)
         {
-            return new Vector2[] { points[i * 3], points[i * 3 + 1], points[i * 3 + 2], points[LoopIndex(i * 3 + 3)] };
+            return new OrientedPoint[] { points[i * 3], points[i * 3 + 1], points[i * 3 + 2], points[LoopIndex(i * 3 + 3)] };
         }
 
-        public void MovePoint(int i, Vector2 pos)
+        public void MovePoint(int i, Vector3 pos)
         {
-            Vector2 deltaMove = pos - points[i];
-
-            if (i % 3 != 0 && autoSetControlPoints)
-                return;
-
-            points[i] = pos;
-
-            if (autoSetControlPoints)
+            Vector3 deltaMove = pos - points[i].Position;
+            OrientedPoint currPoint = points[i];
+            switch (ControlMode)
             {
-                AutoSetAllAffectedControlPoints(i);
-                return;
-            }
-
-            if (i % 3 == 0)
-            {
-                if (i + 1 < NumPoints || isClosed)
-                {
-                    points[LoopIndex(i + 1)] += deltaMove;
-                }
-                if (i - 1 >= 0 || isClosed)
-                {
-                    points[LoopIndex(i - 1)] += deltaMove;
-                }
-                return;
-            }
-
-            bool nextPointIsAnchor = (i + 1) % 3 == 0;
-            int correspondingControlIndex = (nextPointIsAnchor) ? i + 2 : i - 2;
-            int anchorIndex = (nextPointIsAnchor) ? i + 1 : i - 1;
-
-            if (correspondingControlIndex >= 0 && correspondingControlIndex < NumPoints || isClosed)
-            {
-                float dst = (points[LoopIndex(anchorIndex)] - points[LoopIndex(correspondingControlIndex)]).magnitude;
-                Vector2 dir = (points[LoopIndex(anchorIndex)] - pos).normalized;
-                points[LoopIndex(correspondingControlIndex)] = points[LoopIndex(anchorIndex)] + dir * dst;
+                case ControlModeOption.Aligned:
+                    currPoint.Position = pos;
+                    AlignedAffectedControlPoint(i, deltaMove);
+                    break;
+                case ControlModeOption.Mirrored:
+                    currPoint.Position = pos;
+                    MirrorAffectedControlPoint(i, deltaMove);
+                    break;
+                case ControlModeOption.Automatic:
+                    if (i % 3 == 0)
+                    {
+                        currPoint.Position = pos;
+                        AutoSetAllAffectedControlPoints(i);
+                    }
+                    break;
+                default:
+                    currPoint.Position = pos;
+                    break;
             }
         }
 
-        public Vector2[] CalculateEvenlySpacedPoints(float spacing, float res = 1f)
+        public OrientedPoint[] CalculateEvenlySpacedPoints(float spacing, float res = 1f)
         {
-            List<Vector2> evenlySpacePoint = new List<Vector2>
+            OrientedPoint[] pts = GetPointsInSegment(0);
+            List<OrientedPoint> orientedPoints = new List<OrientedPoint>()
             {
                 points[0]
             };
 
-            Vector2 previousPoint = points[0];
-            float dstSinceLastEvenPoint = 0;
+            Vector3 previousPoint = points[0].Position;
+            float dstSinceLastEvenPoint = 0, totalDstTravel = 0;
             for (int segmentIndex = 0; segmentIndex < NumSegments; segmentIndex++)
             {
-                Vector2[] pts = GetPointsInSegment(segmentIndex);
-                float controlNetLength = (pts[0] - pts[1]).magnitude + (pts[1] - pts[2]).magnitude + (pts[2] - pts[3]).magnitude;
-                float estimatedCurveLegth = (pts[0] - pts[3]).magnitude + controlNetLength * .5f;
+                pts = GetPointsInSegment(segmentIndex);
+                Vector3[] ptsPos = new Vector3[] { pts[0].Position, pts[1].Position, pts[2].Position, pts[3].Position };
+                float controlNetLength = (pts[0].Position - pts[1].Position).magnitude + (pts[1].Position - pts[2].Position).magnitude + (pts[2].Position - pts[3].Position).magnitude;
+                float estimatedCurveLegth = (pts[0].Position - pts[3].Position).magnitude + controlNetLength * .5f;
                 int division = Mathf.CeilToInt(estimatedCurveLegth * res * 10);
                 float t = 0, deltaT = 1f / division;
                 while (t <= 1)
                 {
                     t += deltaT;
-                    Vector2 pointOnCurve = UtilityCode.CubicLerp(pts, t);
-                    dstSinceLastEvenPoint += (previousPoint - pointOnCurve).magnitude;
+                    Vector3 pointOnCurve = UtilityCode.CubicBezier(ptsPos, t);
+                    float dstBetweenPoints = (previousPoint - pointOnCurve).magnitude;
+                    dstSinceLastEvenPoint += dstBetweenPoints;
+                    totalDstTravel += dstBetweenPoints;
                     while (dstSinceLastEvenPoint >= spacing)
                     {
-                        float overShotDst = dstSinceLastEvenPoint - spacing;
-                        Vector2 newEvenlySpacePoint = pointOnCurve + (previousPoint - pointOnCurve).normalized * overShotDst;
-                        evenlySpacePoint.Add(newEvenlySpacePoint);
-                        dstSinceLastEvenPoint = overShotDst;
+                        float overShootDst = dstSinceLastEvenPoint - spacing;
+                        dstSinceLastEvenPoint = overShootDst;
+                        Vector3 newEvenlySpacePoint = pointOnCurve + (previousPoint - pointOnCurve).normalized * spacing;
+                        orientedPoints.Add(new OrientedPoint(newEvenlySpacePoint, UtilityCode.CubicOrientation(ptsPos, Vector3.up, t - 1 - overShootDst / totalDstTravel)));
                         previousPoint = newEvenlySpacePoint;
                     }
 
                     previousPoint = pointOnCurve;
-
                 }
             }
 
-            return evenlySpacePoint.ToArray();
+            return orientedPoints.ToArray();
+        }
+
+        void ControlModeOptionChange()
+        {
+            switch (ControlMode)
+            {
+                case ControlModeOption.Aligned:
+                    AlignedAllPoint();
+                    break;
+                case ControlModeOption.Mirrored:
+                    MirrorAllPoint();
+                    break;
+                case ControlModeOption.Automatic:
+                    AutoSetAllControlPoints();
+                    break;
+            }
+        }
+
+        void AlignedAllPoint()
+        {
+            for (int i = 0; i < NumPoints; i++)
+                AlignedAffectedControlPoint(i, Vector3.zero);
+        }
+
+        void AlignedAffectedControlPoint(int index, Vector3 deltaMove)
+        {
+            if (index % 3 == 0)
+            {
+                OrientedPoint currPoint;
+                if (index + 1 < NumPoints || isClosed)
+                {
+                    currPoint = points[LoopIndex(index + 1)];
+                    currPoint.Position += deltaMove;
+                }
+                if (index - 1 >= 0 || isClosed)
+                {
+                    currPoint = points[LoopIndex(index - 1)];
+                    currPoint.Position += deltaMove;
+                }
+                return;
+            }
+
+            bool nextPointIsAnchor = (index + 1) % 3 == 0;
+            int correspondingControlIndex = (nextPointIsAnchor) ? index + 2 : index - 2;
+            int anchorIndex = (nextPointIsAnchor) ? index + 1 : index - 1;
+
+            if (correspondingControlIndex >= 0 && correspondingControlIndex < NumPoints || isClosed)
+            {
+                float dst = (points[LoopIndex(anchorIndex)].Position - points[LoopIndex(correspondingControlIndex)].Position).magnitude;
+                Vector3 dir = (points[LoopIndex(anchorIndex)].Position - points[index].Position).normalized;
+                OrientedPoint correspondingAnchor = points[LoopIndex(correspondingControlIndex)];
+                correspondingAnchor.Position = points[LoopIndex(anchorIndex)].Position + dir * dst;
+            }
+        }
+
+        void MirrorAllPoint()
+        {
+            for (int i = 1; i < NumPoints; i += 3)
+                MirrorAffectedControlPoint(i, Vector3.zero);
+        }
+
+        void MirrorAffectedControlPoint(int index, Vector3 deltaMove)
+        {
+            if (index % 3 == 0)
+            {
+                OrientedPoint currPoint;
+                if (index + 1 < NumPoints || isClosed)
+                {
+                    currPoint = points[LoopIndex(index + 1)];
+                    currPoint.Position += deltaMove;
+                }
+                if (index - 1 >= 0 || isClosed)
+                {
+                    currPoint = points[LoopIndex(index - 1)];
+                    currPoint.Position += deltaMove;
+                }
+                return;
+            }
+
+            bool nextPointIsAnchor = (index + 1) % 3 == 0;
+            int correspondingControlIndex = (nextPointIsAnchor) ? index + 2 : index - 2;
+            int anchorIndex = (nextPointIsAnchor) ? index + 1 : index - 1;
+
+            if (correspondingControlIndex >= 0 && correspondingControlIndex < NumPoints || isClosed)
+            {
+                float dst = (points[LoopIndex(anchorIndex)].Position - points[index].Position).magnitude;
+                Vector3 dir = (points[LoopIndex(anchorIndex)].Position - points[index].Position).normalized;
+                OrientedPoint correspondingAnchor = points[LoopIndex(correspondingControlIndex)];
+                correspondingAnchor.Position = points[LoopIndex(anchorIndex)].Position - dir * dst;
+            }
         }
 
         void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
@@ -209,19 +315,19 @@ namespace CoreScript.Utility
 
         void AutoSetAnchorControlPoints(int anchorIndex)
         {
-            Vector2 anchorPos = points[anchorIndex];
-            Vector2 dir = Vector2.zero;
+            OrientedPoint anchorOrientedPoint = points[anchorIndex];
+            Vector3 dir = Vector3.zero;
             float[] neighbourDistances = new float[2];
 
             if (anchorIndex - 3 >= 0 || isClosed)
             {
-                Vector2 offset = points[LoopIndex(anchorIndex - 3)] - anchorPos;
+                Vector3 offset = points[LoopIndex(anchorIndex - 3)].Position - anchorOrientedPoint.Position;
                 dir += offset.normalized;
                 neighbourDistances[0] = offset.magnitude;
             }
             if (anchorIndex + 3 >= 0 || isClosed)
             {
-                Vector2 offset = points[LoopIndex(anchorIndex + 3)] - anchorPos;
+                Vector3 offset = points[LoopIndex(anchorIndex + 3)].Position - anchorOrientedPoint.Position;
                 dir -= offset.normalized;
                 neighbourDistances[1] = -offset.magnitude;
             }
@@ -232,7 +338,10 @@ namespace CoreScript.Utility
             {
                 int controlIndex = anchorIndex + i * 2 - 1;
                 if (controlIndex >= 0 && controlIndex < NumPoints || isClosed)
-                    points[LoopIndex(controlIndex)] = anchorPos + dir * neighbourDistances[i] * .5f;
+                {
+                    OrientedPoint point = points[LoopIndex(controlIndex)];
+                    point.Position = anchorOrientedPoint.Position + dir * neighbourDistances[i] * .5f;
+                }
             }
         }
 
@@ -240,15 +349,17 @@ namespace CoreScript.Utility
         {
             if (isClosed)
                 return;
+            OrientedPoint point = points[1];
 
-            points[1] = (points[0] + points[2]) * .5f;
-            points[NumPoints - 2] = (points[NumPoints - 1] + points[NumPoints - 3]) * .5f;
+            point.Position = (points[0].Position + points[2].Position) * .5f;
+            point = points[NumPoints - 2];
+            point.Position = (points[NumPoints - 1].Position + points[NumPoints - 3].Position) * .5f;
         }
 
         int LoopIndex(int i)
         {
             return (i + NumPoints) % NumPoints;
         }
-
     }
+
 }

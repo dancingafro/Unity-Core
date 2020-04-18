@@ -22,7 +22,6 @@ namespace CoreScript.Utility
             {
                 Undo.RecordObject(creator, "Create new");
                 creator.CreatePath();
-                SceneView.RepaintAll();
             }
             bool isClosed = GUILayout.Toggle(Path.IsClosed, "Closed Path");
             if (Path.IsClosed != isClosed)
@@ -30,12 +29,11 @@ namespace CoreScript.Utility
                 Undo.RecordObject(creator, "Closed Path");
                 Path.IsClosed = isClosed;
             }
-
-            bool autoSetControlPoints = GUILayout.Toggle(Path.AutoSetControlPoints, "Auto Set Controls Points");
-            if (Path.AutoSetControlPoints != autoSetControlPoints)
+            Path.ControlModeOption controlMode = (Path.ControlModeOption)EditorGUILayout.EnumPopup("Control Mode", Path.ControlMode);
+            if (Path.ControlMode != controlMode)
             {
-                Undo.RecordObject(creator, "Auto Set Control Points");
-                Path.AutoSetControlPoints = autoSetControlPoints;
+                Undo.RecordObject(creator, "Control Mode");
+                Path.ControlMode = controlMode;
             }
 
             if (EditorGUI.EndChangeCheck())
@@ -74,7 +72,7 @@ namespace CoreScript.Utility
 
                 for (int i = 0; i < Path.NumPoints; i += 3)
                 {
-                    float dstSqr = (Path[i] - mousePos).sqrMagnitude;
+                    float dstSqr = (Path[i].Position - mousePos).sqrMagnitude;
                     if (dstSqr < minDstToAnchorSqr)
                     {
                         minDstToAnchorSqr = dstSqr;
@@ -95,8 +93,8 @@ namespace CoreScript.Utility
 
                 for (int i = 0; i < Path.NumSegments; ++i)
                 {
-                    Vector3[] points = Path.GetPointsInSegment(i);
-                    float dst = HandleUtility.DistancePointBezier(mousePos, points[0], points[3], points[1], points[2]);
+                    OrientedPoint[] points = Path.GetPointsInSegment(i);
+                    float dst = HandleUtility.DistancePointBezier(mousePos, points[0].Position, points[3].Position, points[1].Position, points[2].Position);
                     if (dst < minDstToSegment)
                     {
                         minDstToSegment = dst;
@@ -116,15 +114,15 @@ namespace CoreScript.Utility
         {
             for (int i = 0; i < Path.NumSegments; ++i)
             {
-                Vector3[] points = Path.GetPointsInSegment(i);
-                if (creator.displayControlPoints)
+                OrientedPoint[] points = Path.GetPointsInSegment(i);
+                if (creator.displayControlPoints && Path.ControlMode != Path.ControlModeOption.Automatic)
                 {
                     Handles.color = Color.black;
-                    Handles.DrawLine(points[1], points[0]);
-                    Handles.DrawLine(points[2], points[3]);
+                    Handles.DrawLine(points[1].Position, points[0].Position);
+                    Handles.DrawLine(points[2].Position, points[3].Position);
                 }
                 Color segmentColour = selectedSegmentIndex == i ? creator.selectedCol : creator.segmentCol;
-                Handles.DrawBezier(points[0], points[3], points[1], points[2], segmentColour, null, 2);
+                Handles.DrawBezier(points[0].Position, points[3].Position, points[1].Position, points[2].Position, segmentColour, null, 2);
             }
 
             for (int i = 0; i < Path.NumPoints; ++i)
@@ -135,9 +133,9 @@ namespace CoreScript.Utility
                     continue;
 
                 Handles.color = isAnchor ? creator.anchorCol : creator.controlCol;
-                Vector3 newPos = Handles.FreeMoveHandle(Path[i], Quaternion.identity, isAnchor ? creator.anchorDiameter : creator.controlDiameter, Vector3.zero, Handles.CylinderHandleCap);
+                Vector3 newPos = Handles.FreeMoveHandle(Path[i].Position, Path[i].Rotation, isAnchor ? creator.anchorDiameter : creator.controlDiameter, Vector3.zero, Handles.CylinderHandleCap);
 
-                if (Path[i] == newPos)
+                if (Path[i].Position == newPos)
                     continue;
 
                 Undo.RecordObject(creator, "Move point");
