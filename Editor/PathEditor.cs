@@ -51,7 +51,7 @@ namespace CoreScript.Utility
         void Input()
         {
             Event guiEvent = Event.current;
-            Vector2 mousePos = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+            Vector3 mousePos = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
 
             if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift)
             {
@@ -95,7 +95,7 @@ namespace CoreScript.Utility
 
                 for (int i = 0; i < Path.NumSegments; ++i)
                 {
-                    Vector2[] points = Path.GetPointsInSegment(i);
+                    Vector3[] points = Path.GetPointsInSegment(i);
                     float dst = HandleUtility.DistancePointBezier(mousePos, points[0], points[3], points[1], points[2]);
                     if (dst < minDstToSegment)
                     {
@@ -109,13 +109,14 @@ namespace CoreScript.Utility
                     SceneView.RepaintAll();
                 }
             }
+            HandleUtility.AddDefaultControl(0);
         }
 
         void Draw()
         {
             for (int i = 0; i < Path.NumSegments; ++i)
             {
-                Vector2[] points = Path.GetPointsInSegment(i);
+                Vector3[] points = Path.GetPointsInSegment(i);
                 if (creator.displayControlPoints)
                 {
                     Handles.color = Color.black;
@@ -130,11 +131,11 @@ namespace CoreScript.Utility
             {
                 bool isAnchor = i % 3 == 0;
 
-                if (!(isAnchor && creator.displayControlPoints))
+                if (!isAnchor && !creator.displayControlPoints)
                     continue;
 
                 Handles.color = isAnchor ? creator.anchorCol : creator.controlCol;
-                Vector2 newPos = Handles.FreeMoveHandle(Path[i], Quaternion.identity, isAnchor ? creator.anchorDiameter : creator.controlDiameter, Vector2.zero, Handles.CylinderHandleCap);
+                Vector3 newPos = Handles.FreeMoveHandle(Path[i], Quaternion.identity, isAnchor ? creator.anchorDiameter : creator.controlDiameter, Vector3.zero, Handles.CylinderHandleCap);
 
                 if (Path[i] == newPos)
                     continue;

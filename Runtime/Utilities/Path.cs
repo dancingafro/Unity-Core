@@ -7,7 +7,6 @@ namespace CoreScript.Utility
     [System.Serializable]
     public class Path
     {
-
         [SerializeField, HideInInspector]
         List<Vector2> points;
         [SerializeField, HideInInspector]
@@ -160,17 +159,17 @@ namespace CoreScript.Utility
 
             Vector2 previousPoint = points[0];
             float dstSinceLastEvenPoint = 0;
-            for (int segmetIndex = 0; segmetIndex < NumSegments; segmetIndex++)
+            for (int segmentIndex = 0; segmentIndex < NumSegments; segmentIndex++)
             {
-                Vector2[] pts = GetPointsInSegment(segmetIndex);
+                Vector2[] pts = GetPointsInSegment(segmentIndex);
                 float controlNetLength = (pts[0] - pts[1]).magnitude + (pts[1] - pts[2]).magnitude + (pts[2] - pts[3]).magnitude;
                 float estimatedCurveLegth = (pts[0] - pts[3]).magnitude + controlNetLength * .5f;
                 int division = Mathf.CeilToInt(estimatedCurveLegth * res * 10);
-                float t = 0;
-                while (t <= 0)
+                float t = 0, deltaT = 1f / division;
+                while (t <= 1)
                 {
-                    t += 1f / division;
-                    Vector2 pointOnCurve = Bezier.CubicLerp(pts, t);
+                    t += deltaT;
+                    Vector2 pointOnCurve = UtilityCode.CubicLerp(pts, t);
                     dstSinceLastEvenPoint += (previousPoint - pointOnCurve).magnitude;
                     while (dstSinceLastEvenPoint >= spacing)
                     {

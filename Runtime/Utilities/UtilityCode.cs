@@ -64,11 +64,139 @@ namespace CoreScript.Utility
             return textMesh;
         }
 
+        public static Vector3 QuadraticBezier2D(Vector3 a, Vector3 b, Vector3 c, float t)
+        {
+            Vector3 quadraticBezier = QuadraticBezier(a, b, c, t);
+            quadraticBezier.z = 0;
+            return quadraticBezier;
+        }
+
+        public static Vector3 QuadraticBezier2D(Vector3[] pts, float t)
+        {
+            return QuadraticBezier2D(pts[0], pts[1], pts[2], t);
+        }
+
+        public static Vector3 CubicBezier2D(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            Vector3 cubicBezier = CubicBezier(a, b, c, d, t);
+            cubicBezier.z = 0;
+            return cubicBezier;
+        }
+
+        public static Vector3 CubicBezier2D(Vector3[] pts, float t)
+        {
+            return CubicBezier2D(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Vector3 CubicTangent2D(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            Vector3 tangent = CubicTangent(a, b, c, d, t);
+            return new Vector3(tangent.x, tangent.y);
+        }
+
+        public static Vector3 CubicTangent2D(Vector3[] pts, float t)
+        {
+            return CubicTangent2D(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Vector3 CubicNormal2D(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            Vector3 tangent = CubicTangent2D(a, b, c, d, t);
+            return new Vector3(-tangent.y, tangent.x);
+        }
+
+        public static Vector3 CubicNormal2D(Vector3[] pts, float t)
+        {
+            return CubicNormal2D(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Quaternion CubicOrientation2D(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            Vector3 tangent = CubicTangent2D(a, b, c, d, t);
+            Vector3 normal = CubicNormal2D(a, b, c, d, t);
+            return Quaternion.LookRotation(tangent, normal);
+        }
+
+        public static Quaternion CubicOrientation2D(Vector3[] pts, float t)
+        {
+            return CubicOrientation2D(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Vector3 QuadraticBezier(Vector3 a, Vector3 b, Vector3 c, float t)
+        {
+            float tSqr = t * t;
+            float ts = 2 * t;
+            return tSqr * a - 2 * tSqr * b + tSqr * c - ts * a + ts * b + a;
+        }
+
+        public static Vector3 QuadraticBezier(Vector3[] pts, float t)
+        {
+            return QuadraticBezier(pts[0], pts[1], pts[2], t);
+        }
+
+        public static Vector3 CubicBezier(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            float omt = 1f - t;
+            float omtSqr = omt * omt;
+            float tSqr = t * t;
+            return a * (omtSqr * omt) + b * (3f * omtSqr * t) + c * (3f * omt * tSqr) + d * (tSqr * t);
+        }
+
+        public static Vector3 CubicBezier(Vector3[] pts, float t)
+        {
+            return CubicBezier(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Vector3 CubicTangent(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            float omt = 1f - t;
+            float omtSqr = omt * omt;
+            float tSqr = t * t;
+
+            Vector3 tangent = a * (-omtSqr) +
+                             b * (3f * omtSqr - 2 * omt) +
+                             c * (-3f * tSqr + 2 * t) +
+                             d * tSqr;
+
+            return tangent.normalized;
+        }
+
+        public static Vector3 CubicTangent(Vector3[] pts, float t)
+        {
+            return CubicTangent(pts[0], pts[1], pts[2], pts[3], t);
+        }
+
+        public static Vector3 CubicNormal(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 up, float t)
+        {
+            Vector3 tangent = CubicTangent(a, b, c, d, t);
+            Vector3 biNormal = Vector3.Cross(up, tangent).normalized;
+            return Vector3.Cross(tangent, biNormal);
+        }
+
+        public static Vector3 CubicNormal(Vector3[] pts, Vector3 up, float t)
+        {
+            return CubicNormal(pts[0], pts[1], pts[2], pts[3], up, t);
+        }
+
+        public static Quaternion CubicOrientation(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 up, float t)
+        {
+            Vector3 tangent = CubicTangent(a, b, c, d, t);
+            Vector3 normal = CubicNormal(a, b, c, d, up, t);
+            return Quaternion.LookRotation(tangent, normal);
+        }
+
+        public static Quaternion CubicOrientation(Vector3[] pts, Vector3 up, float t)
+        {
+            return CubicOrientation(pts[0], pts[1], pts[2], pts[3], up, t);
+        }
+
         public static Texture2D TextureFromColors(Color[] colors, int width, int height)
         {
-            Texture2D texture = new Texture2D(width, height);
-            texture.filterMode = FilterMode.Point;
-            texture.wrapMode = TextureWrapMode.Clamp;
+            Texture2D texture = new Texture2D(width, height)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp
+            };
             texture.SetPixels(colors);
             texture.Apply();
             return texture;
