@@ -59,7 +59,7 @@ namespace CoreScript.PathCreation.Examples
         protected virtual void OnEnable()
         {
             pathTool = (PathSceneTool)target;
-            pathTool.onDestroyed += OnToolDestroyed;
+            pathTool.OnDestroyed += OnToolDestroyed;
 
             if (TryFindPathCreator())
             {

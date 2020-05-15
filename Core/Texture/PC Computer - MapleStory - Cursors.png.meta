@@ -1,0 +1,386 @@
+fileFormatVersion: 2
+guid: 23ee5f97068b4fc48989b0873538b21c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2920930481658864737
+    second: PC Computer - MapleStory - Cursors_0
+  - first:
+      213: 3379348025310145448
+    second: PC Computer - MapleStory - Cursors_1
+  - first:
+      213: 8984146287757390824
+    second: PC Computer - MapleStory - Cursors_2
+  - first:
+      213: 8547636810753807019
+    second: PC Computer - MapleStory - Cursors_3
+  - first:
+      213: -4059791655487397128
+    second: PC Computer - MapleStory - Cursors_4
+  - first:
+      213: 8902143460227399822
+    second: PC Computer - MapleStory - Cursors_5
+  - first:
+      213: -2538190429467443332
+    second: PC Computer - MapleStory - Cursors_6
+  - first:
+      213: 7458829623696176046
+    second: PC Computer - MapleStory - Cursors_7
+  - first:
+      213: -7018884919952413584
+    second: PC Computer - MapleStory - Cursors_8
+  - first:
+      213: -4552977493443664560
+    second: PC Computer - MapleStory - Cursors_9
+  - first:
+      213: 7174958005708109519
+    second: PC Computer - MapleStory - Cursors_10
+  - first:
+      213: -8423883260227548342
+    second: PC Computer - MapleStory - Cursors_11
+  - first:
+      213: 2760142646772482984
+    second: PC Computer - MapleStory - Cursors_12
+  - first:
+      213: -8438105511616626845
+    second: PC Computer - MapleStory - Cursors_13
+  - first:
+      213: -2498742630203229593
+    second: PC Computer - MapleStory - Cursors_14
+  - first:
+      213: -6692024446566586828
+    second: PC Computer - MapleStory - Cursors_15
+  - first:
+      213: 2735764513973163595
+    second: PC Computer - MapleStory - Cursors_16
+  - first:
+      213: 7854900491015334627
+    second: PC Computer - MapleStory - Cursors_17
+  - first:
+      213: -992630421122353247
+    second: PC Computer - MapleStory - Cursors_18
+  - first:
+      213: 4874916747566240764
+    second: PC Computer - MapleStory - Cursors_19
+  - first:
+      213: -8332051168877892309
+    second: PC Computer - MapleStory - Cursors_20
+  - first:
+      213: 7090391188184251428
+    second: PC Computer - MapleStory - Cursors_21
+  - first:
+      213: -3492097964626167530
+    second: PC Computer - MapleStory - Cursors_22
+  - first:
+      213: -8245845736868722073
+    second: PC Computer - MapleStory - Cursors_23
+  - first:
+      213: -3554439226109957229
+    second: PC Computer - MapleStory - Cursors_24
+  - first:
+      213: 2962996963259112422
+    second: PC Computer - MapleStory - Cursors_25
+  - first:
+      213: -200000527794861868
+    second: PC Computer - MapleStory - Cursors_26
+  - first:
+      213: 254655563319493939
+    second: PC Computer - MapleStory - Cursors_27
+  - first:
+      213: 7959126866592514409
+    second: PC Computer - MapleStory - Cursors_28
+  - first:
+      213: -8911623873882304206
+    second: PC Computer - MapleStory - Cursors_29
+  - first:
+      213: 5302414709698845245
+    second: PC Computer - MapleStory - Cursors_30
+  - first:
+      213: 6201179339759873269
+    second: PC Computer - MapleStory - Cursors_31
+  - first:
+      213: -1946198804613006705
+    second: PC Computer - MapleStory - Cursors_32
+  - first:
+      213: -4605331216133387418
+    second: PC Computer - MapleStory - Cursors_33
+  - first:
+      213: 4101007783788229646
+    second: PC Computer - MapleStory - Cursors_34
+  - first:
+      213: -6018713121936382506
+    second: PC Computer - MapleStory - Cursors_35
+  - first:
+      213: -4031043553002799400
+    second: PC Computer - MapleStory - Cursors_36
+  - first:
+      213: -195426326505895456
+    second: PC Computer - MapleStory - Cursors_37
+  - first:
+      213: -847449967571240980
+    second: PC Computer - MapleStory - Cursors_38
+  - first:
+      213: -2834541181262393622
+    second: PC Computer - MapleStory - Cursors_39
+  - first:
+      213: -2798848686657800313
+    second: PC Computer - MapleStory - Cursors_40
+  - first:
+      213: -4344819993922879882
+    second: PC Computer - MapleStory - Cursors_41
+  - first:
+      213: -8093956099222013389
+    second: PC Computer - MapleStory - Cursors_42
+  - first:
+      213: -8249983787863413521
+    second: PC Computer - MapleStory - Cursors_43
+  - first:
+      213: 3250015973554731057
+    second: PC Computer - MapleStory - Cursors_44
+  - first:
+      213: -8076927178696487909
+    second: PC Computer - MapleStory - Cursors_45
+  - first:
+      213: -6727858633532041371
+    second: PC Computer - MapleStory - Cursors_46
+  - first:
+      213: 795532680832082279
+    second: PC Computer - MapleStory - Cursors_47
+  - first:
+      213: -3121277514211583076
+    second: PC Computer - MapleStory - Cursors_48
+  - first:
+      213: 1881030521857508781
+    second: PC Computer - MapleStory - Cursors_49
+  - first:
+      213: -7637015322041473239
+    second: PC Computer - MapleStory - Cursors_50
+  - first:
+      213: -5536333539163383213
+    second: PC Computer - MapleStory - Cursors_51
+  - first:
+      213: -7492046294790125574
+    second: PC Computer - MapleStory - Cursors_52
+  - first:
+      213: -2568417632748427733
+    second: PC Computer - MapleStory - Cursors_53
+  - first:
+      213: 2357722842141224946
+    second: PC Computer - MapleStory - Cursors_54
+  - first:
+      213: -7661962704106448637
+    second: PC Computer - MapleStory - Cursors_55
+  - first:
+      213: -7247431671995723049
+    second: PC Computer - MapleStory - Cursors_56
+  - first:
+      213: 8158852084974843337
+    second: PC Computer - MapleStory - Cursors_57
+  - first:
+      213: 8920888038637685295
+    second: PC Computer - MapleStory - Cursors_58
+  - first:
+      213: -4504483506428742711
+    second: PC Computer - MapleStory - Cursors_59
+  - first:
+      213: -1660310766242230656
+    second: PC Computer - MapleStory - Cursors_60
+  - first:
+      213: 2952506468006620040
+    second: PC Computer - MapleStory - Cursors_61
+  - first:
+      213: 6358979288516435301
+    second: PC Computer - MapleStory - Cursors_62
+  - first:
+      213: -1619100136085083016
+    second: PC Computer - MapleStory - Cursors_63
+  - first:
+      213: 3733798347355110083
+    second: PC Computer - MapleStory - Cursors_64
+  - first:
+      213: -601362765178972997
+    second: PC Computer - MapleStory - Cursors_65
+  - first:
+      213: 1560306979586377312
+    second: PC Computer - MapleStory - Cursors_66
+  - first:
+      213: -6207413091146193631
+    second: PC Computer - MapleStory - Cursors_67
+  - first:
+      213: 2886593061826450754
+    second: PC Computer - MapleStory - Cursors_68
+  - first:
+      213: 3225903103552402470
+    second: PC Computer - MapleStory - Cursors_69
+  - first:
+      213: -3490160729341357781
+    second: PC Computer - MapleStory - Cursors_70
+  - first:
+      213: -359571650024543089
+    second: PC Computer - MapleStory - Cursors_71
+  - first:
+      213: -5658217168999267098
+    second: PC Computer - MapleStory - Cursors_72
+  - first:
+      213: -6561096817070567490
+    second: PC Computer - MapleStory - Cursors_73
+  - first:
+      213: 4109795151705012781
+    second: PC Computer - MapleStory - Cursors_74
+  - first:
+      213: -5192554544480475352
+    second: PC Computer - MapleStory - Cursors_75
+  - first:
+      213: -2590317843459881451
+    second: PC Computer - MapleStory - Cursors_76
+  - first:
+      213: -2202560448146955749
+    second: PC Computer - MapleStory - Cursors_77
+  - first:
+      213: -8085971365193664740
+    second: PC Computer - MapleStory - Cursors_78
+  - first:
+      213: -6175977101200674361
+    second: PC Computer - MapleStory - Cursors_79
+  - first:
+      213: -1914847255416353238
+    second: PC Computer - MapleStory - Cursors_80
+  - first:
+      213: 6859345025229007375
+    second: PC Computer - MapleStory - Cursors_81
+  - first:
+      213: 8335333888620052497
+    second: PC Computer - MapleStory - Cursors_82
+  - first:
+      213: -7303411088472079489
+    second: PC Computer - MapleStory - Cursors_83
+  - first:
+      213: -7117334242133918208
+    second: PC Computer - MapleStory - Cursors_84
+  - first:
+      213: -2668115000940139147
+    second: PC Computer - MapleStory - Cursors_85
+  - first:
+      213: 172388199777273550
+    second: PC Computer - MapleStory - Cursors_86
+  - first:
+      213: 664880279320703232
+    second: PC Computer - MapleStory - Cursors_87
+  - first:
+      213: 4965078490026623289
+    second: PC Computer - MapleStory - Cursors_88
+  - first:
+      213: 7645782227824418523
+    second: PC Computer - MapleStory - Cursors_89
+  externalObjects: {}
+  serializedVersion: 11
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: -1
+    aniso: 1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: -1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  applyGammaDecoding: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

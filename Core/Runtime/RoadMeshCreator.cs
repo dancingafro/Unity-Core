@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace CoreScript.PathCreation.Examples {
-    public class RoadMeshCreator : PathSceneTool {
-        [Header ("Road settings")]
+namespace CoreScript.PathCreation.Examples
+{
+    public class RoadMeshCreator : PathSceneTool
+    {
+        [Header("Road settings")]
         public float roadWidth = .4f;
-        [Range (0, .5f)]
+        [Range(0, .5f)]
         public float thickness = .15f;
         public bool flattenSurface;
 
-        [Header ("Material settings")]
+        [Header("Material settings")]
         public Material roadMaterial;
         public Material undersideMaterial;
         public float textureTiling = 1;
@@ -21,20 +23,23 @@ namespace CoreScript.PathCreation.Examples {
         MeshRenderer meshRenderer;
         Mesh mesh;
 
-        protected override void PathUpdated () {
-            if (pathCreator != null) {
-                AssignMeshComponents ();
-                AssignMaterials ();
-                CreateRoadMesh ();
-            }
+        protected override void PathUpdated()
+        {
+            if (pathCreator == null)
+                return;
+
+            AssignMeshComponents();
+            AssignMaterials();
+            CreateRoadMesh();
         }
 
-        void CreateRoadMesh () {
-            Vector3[] verts = new Vector3[path.NumPoints * 8];
+        void CreateRoadMesh()
+        {
+            Vector3[] verts = new Vector3[VertexPath.NumPoints * 8];
             Vector2[] uvs = new Vector2[verts.Length];
             Vector3[] normals = new Vector3[verts.Length];
 
-            int numTris = 2 * (path.NumPoints - 1) + ((path.isClosedLoop) ? 2 : 0);
+            int numTris = 2 * (VertexPath.NumPoints - 1) + ((VertexPath.isClosedLoop) ? 2 : 0);
             int[] roadTriangles = new int[numTris * 3];
             int[] underRoadTriangles = new int[numTris * 3];
             int[] sideOfRoadTriangles = new int[numTris * 2 * 3];
@@ -49,15 +54,16 @@ namespace CoreScript.PathCreation.Examples {
             int[] triangleMap = { 0, 8, 1, 1, 8, 9 };
             int[] sidesTriangleMap = { 4, 6, 14, 12, 4, 14, 5, 15, 7, 13, 15, 5 };
 
-            bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurface);
+            bool usePathNormals = !(VertexPath.space == PathSpace.xyz && flattenSurface);
 
-            for (int i = 0; i < path.NumPoints; i++) {
-                Vector3 localUp = (usePathNormals) ? Vector3.Cross (path.GetTangent (i), path.GetNormal (i)) : path.up;
-                Vector3 localRight = (usePathNormals) ? path.GetNormal (i) : Vector3.Cross (localUp, path.GetTangent (i));
+            for (int i = 0; i < VertexPath.NumPoints; i++)
+            {
+                Vector3 localUp = (usePathNormals) ? Vector3.Cross(VertexPath.GetTangent(i), VertexPath.GetNormal(i)) : VertexPath.up;
+                Vector3 localRight = (usePathNormals) ? VertexPath.GetNormal(i) : Vector3.Cross(localUp, VertexPath.GetTangent(i));
 
-                // Find position to left and right of current path vertex
-                Vector3 vertSideA = path.GetPoint (i) - localRight * Mathf.Abs (roadWidth);
-                Vector3 vertSideB = path.GetPoint (i) + localRight * Mathf.Abs (roadWidth);
+                // Find position to left and right of current VertexPath vertex
+                Vector3 vertSideA = VertexPath.GetPoint(i) - localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideB = VertexPath.GetPoint(i) + localRight * Mathf.Abs(roadWidth);
 
                 // Add top of road vertices
                 verts[vertIndex + 0] = vertSideA;
@@ -72,9 +78,9 @@ namespace CoreScript.PathCreation.Examples {
                 verts[vertIndex + 6] = verts[vertIndex + 2];
                 verts[vertIndex + 7] = verts[vertIndex + 3];
 
-                // Set uv on y axis to path time (0 at start of path, up to 1 at end of path)
-                uvs[vertIndex + 0] = new Vector2 (0, path.times[i]);
-                uvs[vertIndex + 1] = new Vector2 (1, path.times[i]);
+                // Set uv on y axis to VertexPath time (0 at start of VertexPath, up to 1 at end of VertexPath)
+                uvs[vertIndex + 0] = new Vector2(0, VertexPath.times[i]);
+                uvs[vertIndex + 1] = new Vector2(1, VertexPath.times[i]);
 
                 // Top of road normals
                 normals[vertIndex + 0] = localUp;
@@ -89,13 +95,16 @@ namespace CoreScript.PathCreation.Examples {
                 normals[vertIndex + 7] = localRight;
 
                 // Set triangle indices
-                if (i < path.NumPoints - 1 || path.isClosedLoop) {
-                    for (int j = 0; j < triangleMap.Length; j++) {
+                if (i < VertexPath.NumPoints - 1 || VertexPath.isClosedLoop)
+                {
+                    for (int j = 0; j < triangleMap.Length; j++)
+                    {
                         roadTriangles[triIndex + j] = (vertIndex + triangleMap[j]) % verts.Length;
                         // reverse triangle map for under road so that triangles wind the other way and are visible from underneath
                         underRoadTriangles[triIndex + j] = (vertIndex + triangleMap[triangleMap.Length - 1 - j] + 2) % verts.Length;
                     }
-                    for (int j = 0; j < sidesTriangleMap.Length; j++) {
+                    for (int j = 0; j < sidesTriangleMap.Length; j++)
+                    {
                         sideOfRoadTriangles[triIndex * 2 + j] = (vertIndex + sidesTriangleMap[j]) % verts.Length;
                     }
 
@@ -105,22 +114,24 @@ namespace CoreScript.PathCreation.Examples {
                 triIndex += 6;
             }
 
-            mesh.Clear ();
+            mesh.Clear();
             mesh.vertices = verts;
             mesh.uv = uvs;
             mesh.normals = normals;
             mesh.subMeshCount = 3;
-            mesh.SetTriangles (roadTriangles, 0);
-            mesh.SetTriangles (underRoadTriangles, 1);
-            mesh.SetTriangles (sideOfRoadTriangles, 2);
-            mesh.RecalculateBounds ();
+            mesh.SetTriangles(roadTriangles, 0);
+            mesh.SetTriangles(underRoadTriangles, 1);
+            mesh.SetTriangles(sideOfRoadTriangles, 2);
+            mesh.RecalculateBounds();
         }
 
         // Add MeshRenderer and MeshFilter components to this gameobject if not already attached
-        void AssignMeshComponents () {
+        void AssignMeshComponents()
+        {
 
-            if (meshHolder == null) {
-                meshHolder = new GameObject ("Road Mesh Holder");
+            if (meshHolder == null)
+            {
+                meshHolder = new GameObject("Road Mesh Holder");
             }
 
             meshHolder.transform.rotation = Quaternion.identity;
@@ -128,25 +139,30 @@ namespace CoreScript.PathCreation.Examples {
             meshHolder.transform.localScale = Vector3.one;
 
             // Ensure mesh renderer and filter components are assigned
-            if (!meshHolder.gameObject.GetComponent<MeshFilter> ()) {
-                meshHolder.gameObject.AddComponent<MeshFilter> ();
+            if (!meshHolder.gameObject.GetComponent<MeshFilter>())
+            {
+                meshHolder.gameObject.AddComponent<MeshFilter>();
             }
-            if (!meshHolder.GetComponent<MeshRenderer> ()) {
-                meshHolder.gameObject.AddComponent<MeshRenderer> ();
+            if (!meshHolder.GetComponent<MeshRenderer>())
+            {
+                meshHolder.gameObject.AddComponent<MeshRenderer>();
             }
 
-            meshRenderer = meshHolder.GetComponent<MeshRenderer> ();
-            meshFilter = meshHolder.GetComponent<MeshFilter> ();
-            if (mesh == null) {
-                mesh = new Mesh ();
+            meshRenderer = meshHolder.GetComponent<MeshRenderer>();
+            meshFilter = meshHolder.GetComponent<MeshFilter>();
+            if (mesh == null)
+            {
+                mesh = new Mesh();
             }
             meshFilter.sharedMesh = mesh;
         }
 
-        void AssignMaterials () {
-            if (roadMaterial != null && undersideMaterial != null) {
+        void AssignMaterials()
+        {
+            if (roadMaterial != null && undersideMaterial != null)
+            {
                 meshRenderer.sharedMaterials = new Material[] { roadMaterial, undersideMaterial, undersideMaterial };
-                meshRenderer.sharedMaterials[0].mainTextureScale = new Vector3 (1, textureTiling);
+                meshRenderer.sharedMaterials[0].mainTextureScale = new Vector3(1, textureTiling);
             }
         }
 

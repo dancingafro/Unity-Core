@@ -1,9 +1,10 @@
 fileFormatVersion: 2
-guid: bf9b2d0978370f34f910d993c0cc1f82
+guid: 95476139e7a283b4ea8061183e6ca61f
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - mouseManagerData: {fileID: 11400000, guid: 9cae485d6a4c64548bb94161e4178064, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
