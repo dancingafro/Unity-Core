@@ -7,39 +7,90 @@ namespace CoreScript.Cursors
     //[CreateAssetMenu(fileName = "MouseManagerData", menuName = "Mouse/Mouse Manager Data")]
     public class CursorManagerData : ScriptableObject
     {
-        public Dictionary<CursorType, CursorAnimationData> cursorAnimations;
-        [SerializeField] CursorType defaultCursorType;
-        CursorType currentCursorType;
+        public CursorAnimationData[] cursorAnimations = new CursorAnimationData[1];
+        public CursorType defaultCursorType;
+        public CursorType CurrentCursorType { get; private set; }
 
-        public CursorAnimationData CurrentCursorAnimation { get { return cursorAnimations[currentCursorType]; } }
+        public CursorAnimationData CurrentCursorAnimation
+        {
+            get
+            {
+                foreach (var item in cursorAnimations)
+                {
+                    if (item.CursorType == CurrentCursorType)
+                        return item;
+                }
+                return null;
+            }
+        }
 
-        public void SetActiveCursorAnimation()
+
+        public void SetDefaultCursorAnimation()
         {
             SetActiveCursorAnimation(defaultCursorType);
         }
 
         public void SetActiveCursorAnimation(CursorType cursorType)
         {
-            if (!cursorAnimations.ContainsKey(cursorType))
+            if (!ContainsType(cursorType))
                 return;
-            currentCursorType = cursorType;
+            CurrentCursorType = cursorType;
             CurrentCursorAnimation.ResetData();
         }
 
-#if UNITY_EDITOR
-        public void AddNewCursorAnimation(CursorType cursorType, CursorAnimationData cursorAnimationData)
+        public void SetActiveCursorAnimation(int index)
         {
-            cursorAnimations.Add(cursorType, cursorAnimationData);
+            SetActiveCursorAnimation(cursorAnimations[index].CursorType);
+        }
+
+        bool ContainsType(CursorType cursorType)
+        {
+            foreach (var item in cursorAnimations)
+            {
+                if (item.CursorType == cursorType)
+                    return true;
+            }
+            return false;
+        }
+
+#if UNITY_EDITOR
+        static readonly string ExamplePath = "CoreScript/Cursor";
+
+        public void AddNewCursorAnimation(CursorAnimationData cursorAnimationData)
+        {
+            CursorAnimationData[] temp = cursorAnimations;
+            cursorAnimations = new CursorAnimationData[temp.Length + 1];
+
+            for (int i = 0; i < temp.Length; i++)
+                cursorAnimations[i] = temp[i];
+
+            cursorAnimations[cursorAnimations.Length - 1] = cursorAnimationData;
+        }
+
+        public void RemoveAt(int index)
+        {
+            CursorAnimationData[] temp = cursorAnimations;
+            cursorAnimations = new CursorAnimationData[temp.Length - 1];
+
+            for (int i = 0; i < temp.Length; i++)
+            {
+                if (i == index)
+                    continue;
+                cursorAnimations[i] = temp[i];
+            }
         }
 
         public static CursorManagerData Load()
         {
-            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>("Resources/CoreScript/Cursor/CursorManagerData.asset");
+            string path = ExamplePath + "/CursorManagerData";
+            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>(path);
             if (cursorManagerData != null)
                 return cursorManagerData;
 
             cursorManagerData = ScriptableObject.CreateInstance<CursorManagerData>();
-            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/com.desmond.corescript/Core/Resources/CoreScript/Cursor/CursorManagerData.asset");
+            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
+            UnityEditor.AssetDatabase.SaveAssets();
+
             Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");
             return cursorManagerData;
         }

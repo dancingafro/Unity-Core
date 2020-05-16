@@ -12,4 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cc42eb3afbaa4c45b5e5772a66f307a, type: 3}
   m_Name: CursorManagerData
   m_EditorClassIdentifier: 
-  defaultCursorType: {fileID: 0}
+  cursorAnimations:
+  - cursorType: {fileID: 11400000, guid: a8cc0fecf0adb614290f7ca1e3e6fb8c, type: 2}
+    listOfCursorTexture:
+    - {fileID: 2800000, guid: 7b9c71838ce406c4a93e8adabc4a677f, type: 3}
+    frameRate: 0.1
+    hotSpot: {x: 7, y: 7}
+  - cursorType: {fileID: 11400000, guid: 228abea2deda7d84c93d4a8cddab201e, type: 2}
+    listOfCursorTexture:
+    - {fileID: 2800000, guid: 7b9c71838ce406c4a93e8adabc4a677f, type: 3}
+    - {fileID: 2800000, guid: e17a2541eb3514348a26e7d3f2c9e072, type: 3}
+    - {fileID: 2800000, guid: df183bb6eb503e648bb625eb9359103e, type: 3}
+    - {fileID: 2800000, guid: 8d6a0edeba04dc740a6069123f3b8918, type: 3}
+    frameRate: 0.1
+    hotSpot: {x: 7, y: 7}
+  defaultCursorType: {fileID: 11400000, guid: a8cc0fecf0adb614290f7ca1e3e6fb8c, type: 2}

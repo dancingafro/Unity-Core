@@ -33,7 +33,7 @@ namespace CoreScript.Cursors
 
         public void SetDefaultCursorAnimation()
         {
-            mouseManagerData.SetActiveCursorAnimation();
+            mouseManagerData.SetDefaultCursorAnimation();
             timer = mouseManagerData.CurrentCursorAnimation.FrameRate;
             Cursor.SetCursor(mouseManagerData.CurrentCursorAnimation[0], mouseManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
         }

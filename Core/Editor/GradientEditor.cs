@@ -48,17 +48,17 @@ namespace CoreScript.Utility
             GUILayout.BeginArea(settingRect);
 
             EditorGUI.BeginChangeCheck();
-            string newName = EditorGUILayout.TextField(Gradient.GetKey(selectedIndex).Name);
+            string newName = EditorGUILayout.TextField("Name :",Gradient.GetKey(selectedIndex).Name);
             if (EditorGUI.EndChangeCheck())
                 Gradient.UpdateKeyName(selectedIndex, newName);
 
             EditorGUI.BeginChangeCheck();
-            Color newColour = EditorGUILayout.ColorField(Gradient.GetKey(selectedIndex).Colour);
+            Color newColour = EditorGUILayout.ColorField("Colour :", Gradient.GetKey(selectedIndex).Colour);
             if (EditorGUI.EndChangeCheck())
                 Gradient.UpdateKeyColor(selectedIndex, newColour);
 
             EditorGUI.BeginChangeCheck();
-            float newTime = EditorGUILayout.FloatField(Gradient.GetKey(selectedIndex).Time);
+            float newTime = EditorGUILayout.FloatField("Time :", Gradient.GetKey(selectedIndex).Time);
             if (EditorGUI.EndChangeCheck())
                 selectedIndex = Gradient.UpdateKeyTime(selectedIndex, newTime);
 

@@ -55,17 +55,16 @@ namespace CoreScript.PathCreation
 #if UNITY_EDITOR
         public static GlobalDisplaySettings Load()
         {
-            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:GlobalDisplaySettings");
-            if (guids.Length == 0)
-            {
-                Debug.LogWarning("Could not find DisplaySettings asset. Will use default settings instead.");
-                return ScriptableObject.CreateInstance<GlobalDisplaySettings>();
-            }
-            else
-            {
-                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<GlobalDisplaySettings>(path);
-            }
+            string path = "CoreScript/PathCreator/GlobalDisplaySettings";
+            GlobalDisplaySettings globalDisplaySettings = Resources.Load<GlobalDisplaySettings>(path);
+            if (globalDisplaySettings != null)
+                return globalDisplaySettings;
+
+            globalDisplaySettings = ScriptableObject.CreateInstance<GlobalDisplaySettings>();
+            UnityEditor.AssetDatabase.CreateAsset(globalDisplaySettings, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
+            UnityEditor.AssetDatabase.SaveAssets();
+            Debug.LogWarning("Could not find DisplaySettings asset. Will use default settings instead.");
+            return ScriptableObject.CreateInstance<GlobalDisplaySettings>();
         }
 #endif
 
