@@ -7,9 +7,9 @@ namespace CoreScript.Cursors
 {
     public class CursorManager : Singleton<CursorManager>
     {
-        [SerializeField] CursorManagerData mouseManagerData;
+        [SerializeField] CursorManagerData mouseManagerData = null;
         float timer = 0f;
-        CursorAnimationData currentCursorAnimation;
+        CursorAnimationData currentCursorAnimation = null;
 
         // Update is called once per frame
         void Update()

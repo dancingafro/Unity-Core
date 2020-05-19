@@ -55,7 +55,7 @@ namespace CoreScript.PathCreation
 #if UNITY_EDITOR
         public static GlobalDisplaySettings Load()
         {
-            string path = "CoreScript/PathCreator/GlobalDisplaySettings";
+            string path = "CoreScript/Path Creator/GlobalDisplaySettings";
             GlobalDisplaySettings globalDisplaySettings = Resources.Load<GlobalDisplaySettings>(path);
             if (globalDisplaySettings != null)
                 return globalDisplaySettings;

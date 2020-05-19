@@ -3,10 +3,10 @@
 namespace CoreScript
 {
     public enum PathSpace { xyz, xy, xz };
+    public enum BlendMode { Linear, Discrete }
 
     public class MinMax3D
     {
-
         public Vector3 Min { get; private set; }
         public Vector3 Max { get; private set; }
 
@@ -25,7 +25,6 @@ namespace CoreScript
 
     public class MinMax2D
     {
-
         public Vector2 Min { get; private set; }
         public Vector2 Max { get; private set; }
 

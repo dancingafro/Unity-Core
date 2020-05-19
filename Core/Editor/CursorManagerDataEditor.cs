@@ -8,7 +8,7 @@ namespace CoreScript.Cursors
     public class CursorManagerDataEditor : ExtendedEditorWindow
     {
         public CursorManagerData CursorManagerData { private get; set; }
-        string name;
+        public string cursorTypeName = "";
         Rect animationPreviewRect;
         public float timer = 0;
         [MenuItem("Custom Editor/Cursor Manager Editor")]
@@ -51,7 +51,10 @@ namespace CoreScript.Cursors
             CursorManagerDataEditor window = (CursorManagerDataEditor)EditorWindow.GetWindow(typeof(CursorManagerDataEditor));
             window.CursorManagerData = cursorManagerData;
             window.serializedObject = new SerializedObject(cursorManagerData);
-            window.timer = cursorManagerData.CurrentCursorAnimation.FrameRate;
+
+            if (cursorManagerData.CurrentCursorAnimation != null)
+                window.timer = cursorManagerData.CurrentCursorAnimation.FrameRate;
+            window.cursorTypeName = "";
             window.Show();
         }
 
@@ -94,7 +97,7 @@ namespace CoreScript.Cursors
 
             Apply();
         }
-        bool hitAdd = false;
+
         static readonly string ExamplePath = "CoreScript/Cursor";
         protected override void DrawSidebar(SerializedProperty prop)
         {
@@ -102,7 +105,7 @@ namespace CoreScript.Cursors
             foreach (SerializedProperty item in prop)
             {
                 GUILayout.BeginHorizontal(GUILayout.MaxHeight(10));
-                GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(275), GUILayout.ExpandHeight(true));
                 if (GUILayout.Button(item.displayName))
                 {
                     selectedPropertyPath = item.propertyPath;
@@ -122,32 +125,30 @@ namespace CoreScript.Cursors
                 ++i;
             }
 
-            if (hitAdd)
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
+            GUILayout.Label("Cursor Type :");
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
+            cursorTypeName = GUILayout.TextArea(cursorTypeName);
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical("box", GUILayout.MinWidth(25), GUILayout.ExpandHeight(true));
+
+            if (GUILayout.Button("+"))
             {
-                GUILayout.BeginHorizontal();
-                GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
-                name = GUILayout.TextArea(name);
-                GUILayout.EndVertical();
-                GUILayout.BeginVertical("box", GUILayout.MinWidth(25), GUILayout.ExpandHeight(true));
-                if (GUILayout.Button("+"))
+                if (cursorTypeName != "")
                 {
-                    hitAdd = false;
-                    string path = ExamplePath + "/Cursor Type/" + name;
+                    string path = ExamplePath + "/Cursor Type/" + cursorTypeName;
                     CursorType cursorType = ScriptableObject.CreateInstance<CursorType>();
                     UnityEditor.AssetDatabase.CreateAsset(cursorType, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
                     UnityEditor.AssetDatabase.SaveAssets();
                     CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));
                     needsRepaint = true;
                 }
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
             }
 
-            if (GUILayout.Button("+"))
-            {
-                hitAdd = true;
-                name = "";
-            }
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
 
             if (!string.IsNullOrEmpty(selectedPropertyPath))
                 selectedProperty = serializedObject.FindProperty(selectedPropertyPath);

@@ -6,7 +6,7 @@ namespace CoreScript.Cursors
 {
     public class CursorObject : MonoBehaviour
     {
-        [SerializeField] CursorType cursorType;
+        [SerializeField] CursorType cursorType = null;
 
         void OnMouseEnter()
         {

@@ -11,6 +11,7 @@ namespace CoreScript.Cursors
         public CursorType defaultCursorType;
         public CursorType CurrentCursorType { get; private set; }
 
+        const string ExamplePath = "CoreScript/Cursor";
         public CursorAnimationData CurrentCursorAnimation
         {
             get
@@ -53,8 +54,26 @@ namespace CoreScript.Cursors
             return false;
         }
 
+        public static CursorManagerData Load()
+        {
+            string path = ExamplePath + "/CursorManagerData";
+            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>(path);
+            if (cursorManagerData != null)
+                return cursorManagerData;
+
 #if UNITY_EDITOR
-        static readonly string ExamplePath = "CoreScript/Cursor";
+            cursorManagerData = ScriptableObject.CreateInstance<CursorManagerData>();
+            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
+            UnityEditor.AssetDatabase.SaveAssets();
+
+            Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");
+            return cursorManagerData;
+#else
+            return null;
+#endif
+        }
+
+#if UNITY_EDITOR
 
         public void AddNewCursorAnimation(CursorAnimationData cursorAnimationData)
         {
@@ -78,21 +97,6 @@ namespace CoreScript.Cursors
                     continue;
                 cursorAnimations[i] = temp[i];
             }
-        }
-
-        public static CursorManagerData Load()
-        {
-            string path = ExamplePath + "/CursorManagerData";
-            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>(path);
-            if (cursorManagerData != null)
-                return cursorManagerData;
-
-            cursorManagerData = ScriptableObject.CreateInstance<CursorManagerData>();
-            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
-            UnityEditor.AssetDatabase.SaveAssets();
-
-            Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");
-            return cursorManagerData;
         }
 #endif
     }
