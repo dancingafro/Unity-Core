@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CoreScript.PathCreation;
+using TMPro;
 
 namespace CoreScript.Utility
 {
@@ -13,6 +14,25 @@ namespace CoreScript.Utility
             XY,
             XZ,
             YZ
+        }
+
+        public static Vector3 MousePosition(float zPos, Pos2D pos2D = Pos2D.XY)
+        {
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z = zPos;
+            switch (pos2D)
+            {
+                case Pos2D.XZ:
+                    mousePos.z = mousePos.y;
+                    mousePos.y = 0;
+                    break;
+                case Pos2D.YZ:
+                    Swap(ref mousePos.x, ref mousePos.y);
+                    mousePos.z = mousePos.y;
+                    mousePos.y = 0;
+                    break;
+            }
+            return mousePos;
         }
 
         public static Vector3 ScreenToWorld3DPos(Camera camera, Vector3 screenPos)
@@ -40,22 +60,21 @@ namespace CoreScript.Utility
             return worldPos;
         }
 
-        public static TextMesh CreateWorldText(string Text, Color color, Transform parent = null, Vector3 localPosition = default, int fontSize = 40, TextAnchor textAnchor = TextAnchor.LowerLeft, TextAlignment textAlignment = TextAlignment.Left, int SortingOrfer = 0)
+        public static TextMeshPro CreateWorldText(string Text, Color color, Transform parent = null, Vector3 localPosition = default, int fontSize = 40, TextAlignmentOptions textAlignment = TextAlignmentOptions.Left, int SortingOrfer = 0)
         {
             if (color == null) color = Color.white;
-            return CreateWorldText(color, Text, parent, localPosition, fontSize, textAnchor, textAlignment, SortingOrfer);
+            return CreateWorldText(color, Text, parent, localPosition, fontSize, textAlignment, SortingOrfer);
         }
 
-        public static TextMesh CreateWorldText(Color color, string Text, Transform parent, Vector3 localPosition, int fontSize, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
+        public static TextMeshPro CreateWorldText(Color color, string Text, Transform parent, Vector3 localPosition, int fontSize, TextAlignmentOptions textAlignment, int sortingOrder)
         {
-            GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
+            GameObject gameObject = new GameObject("World_Text", typeof(TextMeshPro));
 
             Transform transform = gameObject.transform;
             transform.parent = parent;
             transform.localPosition = localPosition;
 
-            TextMesh textMesh = transform.GetComponent<TextMesh>();
-            textMesh.anchor = textAnchor;
+            TextMeshPro textMesh = transform.GetComponent<TextMeshPro>();
             textMesh.alignment = textAlignment;
             textMesh.text = Text;
             textMesh.fontSize = fontSize;
@@ -89,6 +108,13 @@ namespace CoreScript.Utility
                     colors[y * width + x] = Color.Lerp(Color.black, Color.white, heightMap[x, y]);
 
             return TextureFromColors(colors, width, height);
+        }
+
+        public static void Swap<T>(ref T a, ref T b)
+        {
+            T c = a;
+            a = b;
+            b = c;
         }
     }
 
