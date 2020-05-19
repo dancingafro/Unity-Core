@@ -2,97 +2,122 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CoreScript.Utility;
+using TMPro;
 
-[System.Serializable]
-public class CircularGrid2D<TGridObject>
+namespace CoreScript.CustomGrids
 {
-    private int radiusSec, angleSecPerRadiusSec;
-    private float radiusSize, angleSize;
-    private TGridObject[] grid;
-    private TextMesh[] gridText;
-    private Vector3 originPos;
-
-    public CircularGrid2D(int radiusSec, int angleSecPerRadiusSec, float radiusSize, float angleSize, Vector3 originPos)
+    [System.Serializable]
+    public class RadialGrid2D<TGridObject> : Grids<TGridObject>
     {
-        this.radiusSec = radiusSec;
-        this.angleSecPerRadiusSec = angleSecPerRadiusSec;
-        this.radiusSize = radiusSize;
-        this.angleSize = angleSize;
-        this.originPos = originPos;
+        protected new TGridObject[] grid;
+        protected new TextMeshPro[] gridText;
 
-        int total = SectionToIndex(radiusSec - 1, radiusSec * angleSecPerRadiusSec) + 1;
+        public new TGridObject[] Grid { get { return grid; } }
+        public new TextMeshPro[] GridText { get { return gridText; } }
 
-        grid = new TGridObject[total];
-        gridText = new TextMesh[total];
-
-        for (int currRadiusSec = 0; currRadiusSec < radiusSec; currRadiusSec++)
+        //Width = radius
+        //Height = angleSecPerRadiusSec
+        //gridSize = radiusSize
+        public RadialGrid2D(int radiusSec, int angleSecPerRadiusSec, float radiusSize, Vector3 originPos, Transform parent) : base(radiusSec, angleSecPerRadiusSec, radiusSize, originPos)
         {
-            int angleSec = currRadiusSec * angleSecPerRadiusSec;
-            for (int currAngleSec = (currRadiusSec == 0) ? 0 : ((currRadiusSec - 1) * angleSecPerRadiusSec + 1); currAngleSec < angleSec + 1; currAngleSec++)
+            int total = 1;
+
+            for (int i = 1; i < Width; i++)
+                total += i * Height;
+
+            Debug.Log("Length = " + total);
+
+            grid = new TGridObject[total];
+            gridText = new TextMeshPro[total];
+
+            for (int currRadiusSec = 0; currRadiusSec < Width; ++currRadiusSec)
             {
-                int index = SectionToIndex(currRadiusSec, currAngleSec);
-                grid[index] = default;
-                Vector3 gridPos = GridToWorldPos(currRadiusSec, currAngleSec);
-                gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, null, gridPos + new Vector3(radiusSize, angleSize) * .5f, 10, TextAnchor.MiddleCenter, TextAlignment.Center, 0);
+                int numOfSec = currRadiusSec == 0 ? numOfSec = 1 : currRadiusSec * Height;
+
+                int startOfSec = SectionToIndex(currRadiusSec, 1);
+
+                float angleSize = 360 / numOfSec;
+                for (int currAngleSec = 0; currAngleSec < numOfSec; ++currAngleSec)
+                {
+                    int index = startOfSec + currAngleSec;
+                    grid[index] = default;
+                    Vector3 gridPos = currRadiusSec == 0 ? gridPos = Vector3.zero : GridToWorldPos(currRadiusSec, currAngleSec);
+                    gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos, 10, TextAlignmentOptions.Center, 0);
+                }
             }
         }
-    }
 
-    int SectionToIndex(int radius, int angle)
-    {
-        if (radius == 0)
-            return 0;
+        int SectionToIndex(int radius, int angle)
+        {
+            Debug.Log("====SectionToIndex Start====");
+            Debug.Log("radius = " + radius);
+            if (radius < 0)
+                return 0;
 
-        int indexSec = 0;
+            int indexSec = radius * Height;
+            Debug.Log("indexSec = " + indexSec);
+            Debug.Log("Total = " + (indexSec + angle));
+            Debug.Log("====SectionToIndex End====");
+            return indexSec + angle;
+        }
 
-        for (int i = 0; i < radius; i++)
-            indexSec += i * angleSecPerRadiusSec;
+        public override Vector3 GridToWorldPos(int radius, int angle)
+        {
+            int totalAngleSec = radius * Height;
+            float radAngle = (360f * angle / totalAngleSec) * Mathf.Deg2Rad;
+            return new Vector3(Mathf.Cos(radAngle), Mathf.Sin(radAngle)) * (radius * GridSize.x) + originPos;
+        }
 
-        return indexSec + angle;
-    }
+        public override void WorldPosToGrid(Vector3 position, out int radius, out int angle)
+        {
+            Vector3 relativePos = position - originPos;
+            radius = Mathf.FloorToInt(relativePos.magnitude / gridSize.x);
+            int totalAngleSec = radius == 0 ? 1 : radius * Height;
+            float angleRad = Mathf.Atan2(relativePos.y, relativePos.x);
+            Debug.Log("Angle Radian = " + angleRad);
+            float angleDeg = angleRad * Mathf.Rad2Deg + 45f;
+            if (angleDeg < 0f)
+                angleDeg += 360f;
+            Debug.Log("Angle Deg = " + angleDeg);
+            angle = Mathf.FloorToInt((angleDeg / 360) * totalAngleSec);
+            Debug.Log("Angle Result = " + angle);
+        }
 
-    public Vector3 GridToWorldPos(int radius, int angle)
-    {
-        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius + originPos;
-    }
+        public override void SetObject(int radius, int angle, TGridObject gridObject)
+        {
+            if (!InGrid(radius))
+                return;
 
-    void WorldPosToGrid(Vector3 position, out int radius, out int angle)
-    {
-        Vector3 relativePos = position - originPos;
-        radius = Mathf.FloorToInt(relativePos.magnitude / radiusSize);
-        angle = Mathf.FloorToInt(Mathf.Atan2(relativePos.y, relativePos.x) * Mathf.Rad2Deg);
-    }
+            grid[SectionToIndex(radius, angle)] = gridObject;
+            gridText[SectionToIndex(radius, angle)].text = gridObject.ToString();
+        }
 
-    public void SetObject(int radius, int angle, TGridObject gridObject)
-    {
-        if (!InGrid(radius))
-            return;
+        public override TGridObject GetObject(int radius, int angle)
+        {
+            if (!InGrid(radius))
+                return default;
 
-        grid[SectionToIndex(radius, angle)] = gridObject;
-    }
+            return grid[SectionToIndex(radius, angle)];
+        }
 
-    public void SetObject(Vector3 position, TGridObject gridObject)
-    {
-        WorldPosToGrid(position, out int radius, out int angle);
-        SetObject(radius, angle, gridObject);
-    }
+        public override bool InGrid(int radius, int angle = 0)
+        {
+            return radius > 0 && radius < Width;
+        }
 
-    public TGridObject GetObject(int radius, int angle)
-    {
-        if (!InGrid(radius))
-            return default;
+        public override void Clear()
+        {
+            for (int index = 0; index < grid.Length; index++)
+            {
+                grid[index] = default;
+                TextMeshPro tm = gridText[index];
+                if (tm == null)
+                    continue;
 
-        return grid[SectionToIndex(radius, angle)];
-    }
-
-    public TGridObject GetObject(Vector3 position)
-    {
-        WorldPosToGrid(position, out int radius, out int angle);
-        return GetObject(radius, angle);
-    }
-
-    bool InGrid(int radius)
-    {
-        return radius < radiusSec;
+                gridText[index] = null;
+                Object go = tm.gameObject;
+                Object.DestroyImmediate(go);
+            }
+        }
     }
 }
