@@ -15,7 +15,7 @@ namespace CoreScript.CustomGrids
         public new TGridObject[,] Grid { get { return grid; } }
         public new TextMeshPro[,] GridText { get { return gridText; } }
 
-        public Grid2D(int width, int height, float gridSize, Vector3 originPos) : base(width, height, gridSize, originPos)
+        public Grid2D(int width, int height, float gridSize, Vector3 originPos, Transform parent) : base(width, height, gridSize, originPos)
         {
             grid = new TGridObject[Width, Height];
             gridText = new TextMeshPro[Width, Height];
@@ -25,7 +25,27 @@ namespace CoreScript.CustomGrids
                 for (int y = 0; y < Height; ++y)
                 {
                     grid[x, y] = default;
-                    gridText[x, y] = UtilityClass.CreateWorldText(grid[x, y].ToString(), Color.white, null, GridToWorldPos(x, y) + this.gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
+                    gridText[x, y] = UtilityClass.CreateWorldText(grid[x, y].ToString(), Color.white, parent, GridToWorldPos(x, y) + this.gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
+                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x + 1, y), Color.white, 100f);
+                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x, y + 1), Color.white, 100f);
+                }
+            }
+
+            Debug.DrawLine(GridToWorldPos(0, Height), GridToWorldPos(Width, Height), Color.white, 100f);
+            Debug.DrawLine(GridToWorldPos(Width, 0), GridToWorldPos(Width, Height), Color.white, 100f);
+        }
+
+        public Grid2D(int width, int height, float gridWidthSize, float gridHeightSize, Vector3 originPos, Transform parent) : base(width, height, gridWidthSize, gridHeightSize, originPos)
+        {
+            grid = new TGridObject[Width, Height];
+            gridText = new TextMeshPro[Width, Height];
+
+            for (int x = 0; x < Width; ++x)
+            {
+                for (int y = 0; y < Height; ++y)
+                {
+                    grid[x, y] = default;
+                    gridText[x, y] = UtilityClass.CreateWorldText(grid[x, y].ToString(), Color.white, parent, GridToWorldPos(x, y) + gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
                     Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x + 1, y), Color.white, 100f);
                     Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x, y + 1), Color.white, 100f);
                 }
@@ -42,8 +62,9 @@ namespace CoreScript.CustomGrids
 
         public override void WorldPosToGrid(Vector3 position, out int x, out int y)
         {
-            x = Mathf.FloorToInt((position - originPos).x / gridSize.x);
-            y = Mathf.FloorToInt((position - originPos).y / gridSize.y);
+            Vector3 relativePos = (position - originPos);
+            x = Mathf.FloorToInt(relativePos.x / gridSize.x);
+            y = Mathf.FloorToInt(relativePos.y / gridSize.y);
         }
 
         public override void SetObject(int x, int y, TGridObject gridObject)
@@ -52,6 +73,7 @@ namespace CoreScript.CustomGrids
                 return;
 
             grid[x, y] = gridObject;
+            gridText[x, y].text = gridObject.ToString();
         }
 
         public override TGridObject GetObject(int x, int y)

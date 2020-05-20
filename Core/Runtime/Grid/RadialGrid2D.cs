@@ -41,12 +41,12 @@ namespace CoreScript.CustomGrids
                     Vector3 gridPos = currRadiusSec == 0 ? gridPos = Vector3.zero + originPos : GridToWorldPos(currRadiusSec, currAngleSec);
                     int totalAngleSec = currRadiusSec * Height;
                     Vector3 CenterOffSet = Vector3.zero;
-                    //if (currRadiusSec != 0)
-                    //{
-                    //    float onePortionOfAngle = 360f * 1 / totalAngleSec;
-                    //    float tempDeg = (currAngleSec * onePortionOfAngle + onePortionOfAngle * .5f) * Mathf.Deg2Rad;
-                    //    CenterOffSet = (new Vector3(Mathf.Cos(tempDeg), -Mathf.Sin(tempDeg)) * currRadiusSec * GridSize.x + originPos) - gridPos;
-                    //}
+                    if (currRadiusSec != 0)
+                    {
+                        float onePortionOfAngle = 360f * 1 / totalAngleSec;
+                        float tempDeg = (currAngleSec * onePortionOfAngle + onePortionOfAngle * .5f) * Mathf.Deg2Rad;
+                        CenterOffSet = (new Vector3(-Mathf.Cos(tempDeg), -Mathf.Sin(tempDeg)) * currRadiusSec * GridSize.x + originPos) - gridPos;
+                    }
                     gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos + CenterOffSet, (int)gridSize.x * 10, TextAlignmentOptions.Center, 0);
                 }
             }
@@ -57,7 +57,7 @@ namespace CoreScript.CustomGrids
             if (radius == 0)
                 return 0;
             int radiusSec = 0;
-            for (int i = 0; i < radius; i++)
+            for (int i = 1; i < radius; i++)
                 radiusSec += i * Height;
 
             return radiusSec + angle;
