@@ -7,7 +7,17 @@ namespace CoreScript.Cursors
 {
     public class CursorManager : Singleton<CursorManager>
     {
-        [SerializeField] CursorManagerData mouseManagerData = null;
+        CursorManagerData cursorManagerData = null;
+        public CursorManagerData CursorManagerData
+        {
+            get
+            {
+                if (cursorManagerData == null)
+                    cursorManagerData = CursorManagerData.Load();
+
+                return cursorManagerData;
+            }
+        }
         float timer = 0f;
         CursorAnimationData currentCursorAnimation = null;
 
@@ -26,16 +36,15 @@ namespace CoreScript.Cursors
 
         public void SetActiveCursorAnimation(CursorType cursorType)
         {
-            mouseManagerData.SetActiveCursorAnimation(cursorType);
-            timer = mouseManagerData.CurrentCursorAnimation.FrameRate;
-            Cursor.SetCursor(mouseManagerData.CurrentCursorAnimation[0], mouseManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
+            CursorManagerData.SetActiveCursorAnimation(cursorType);
+            currentCursorAnimation = CursorManagerData.CurrentCursorAnimation;
+            timer = CursorManagerData.CurrentCursorAnimation.FrameRate;
+            Cursor.SetCursor(CursorManagerData.CurrentCursorAnimation[0], CursorManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
         }
 
         public void SetDefaultCursorAnimation()
         {
-            mouseManagerData.SetDefaultCursorAnimation();
-            timer = mouseManagerData.CurrentCursorAnimation.FrameRate;
-            Cursor.SetCursor(mouseManagerData.CurrentCursorAnimation[0], mouseManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
+            SetActiveCursorAnimation(CursorManagerData.defaultCursorType);
         }
     }
 }

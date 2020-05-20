@@ -24,8 +24,7 @@ namespace CoreScript.Cursors
                 return null;
             }
         }
-
-
+        
         public void SetDefaultCursorAnimation()
         {
             SetActiveCursorAnimation(defaultCursorType);

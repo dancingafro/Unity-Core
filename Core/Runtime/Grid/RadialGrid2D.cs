@@ -25,62 +25,63 @@ namespace CoreScript.CustomGrids
             for (int i = 1; i < Width; i++)
                 total += i * Height;
 
-            Debug.Log("Length = " + total);
-
             grid = new TGridObject[total];
             gridText = new TextMeshPro[total];
 
             for (int currRadiusSec = 0; currRadiusSec < Width; ++currRadiusSec)
             {
-                int numOfSec = currRadiusSec == 0 ? numOfSec = 1 : currRadiusSec * Height;
+                int numOfSec = currRadiusSec == 0 ? 1 : currRadiusSec * Height;
 
                 int startOfSec = SectionToIndex(currRadiusSec, 1);
 
-                float angleSize = 360 / numOfSec;
                 for (int currAngleSec = 0; currAngleSec < numOfSec; ++currAngleSec)
                 {
                     int index = startOfSec + currAngleSec;
                     grid[index] = default;
-                    Vector3 gridPos = currRadiusSec == 0 ? gridPos = Vector3.zero : GridToWorldPos(currRadiusSec, currAngleSec);
-                    gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos, 10, TextAlignmentOptions.Center, 0);
+                    Vector3 gridPos = currRadiusSec == 0 ? gridPos = Vector3.zero + originPos : GridToWorldPos(currRadiusSec, currAngleSec);
+                    int totalAngleSec = currRadiusSec * Height;
+                    Vector3 CenterOffSet = Vector3.zero;
+                    //if (currRadiusSec != 0)
+                    //{
+                    //    float onePortionOfAngle = 360f * 1 / totalAngleSec;
+                    //    float tempDeg = (currAngleSec * onePortionOfAngle + onePortionOfAngle * .5f) * Mathf.Deg2Rad;
+                    //    CenterOffSet = (new Vector3(Mathf.Cos(tempDeg), -Mathf.Sin(tempDeg)) * currRadiusSec * GridSize.x + originPos) - gridPos;
+                    //}
+                    gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos + CenterOffSet, (int)gridSize.x * 10, TextAlignmentOptions.Center, 0);
                 }
             }
         }
 
         int SectionToIndex(int radius, int angle)
         {
-            Debug.Log("====SectionToIndex Start====");
-            Debug.Log("radius = " + radius);
-            if (radius < 0)
+            if (radius == 0)
                 return 0;
+            int radiusSec = 0;
+            for (int i = 0; i < radius; i++)
+                radiusSec += i * Height;
 
-            int indexSec = radius * Height;
-            Debug.Log("indexSec = " + indexSec);
-            Debug.Log("Total = " + (indexSec + angle));
-            Debug.Log("====SectionToIndex End====");
-            return indexSec + angle;
+            return radiusSec + angle;
         }
 
         public override Vector3 GridToWorldPos(int radius, int angle)
         {
+            if (radius == 0)
+                return Vector3.zero;
+
             int totalAngleSec = radius * Height;
-            float radAngle = (360f * angle / totalAngleSec) * Mathf.Deg2Rad;
-            return new Vector3(Mathf.Cos(radAngle), Mathf.Sin(radAngle)) * (radius * GridSize.x) + originPos;
+            float radAngle = Mathf.Deg2Rad * (360f * ((float)angle / totalAngleSec) + 180f) % 360f;
+            return new Vector3(Mathf.Cos(radAngle), Mathf.Sin(radAngle)) * radius * GridSize.x + originPos;
         }
 
         public override void WorldPosToGrid(Vector3 position, out int radius, out int angle)
         {
             Vector3 relativePos = position - originPos;
             radius = Mathf.FloorToInt(relativePos.magnitude / gridSize.x);
-            int totalAngleSec = radius == 0 ? 1 : radius * Height;
-            float angleRad = Mathf.Atan2(relativePos.y, relativePos.x);
-            Debug.Log("Angle Radian = " + angleRad);
-            float angleDeg = angleRad * Mathf.Rad2Deg + 45f;
+            int totalAngleSec = radius == 0 ? 1 : (radius - 1) * Height + Height;
+            float angleDeg = Mathf.Atan2(relativePos.y, relativePos.x) * Mathf.Rad2Deg;
             if (angleDeg < 0f)
                 angleDeg += 360f;
-            Debug.Log("Angle Deg = " + angleDeg);
-            angle = Mathf.FloorToInt((angleDeg / 360) * totalAngleSec);
-            Debug.Log("Angle Result = " + angle);
+            angle = radius == 0 ? 0 : 1 + Mathf.FloorToInt(totalAngleSec * angleDeg / 360);
         }
 
         public override void SetObject(int radius, int angle, TGridObject gridObject)
@@ -100,9 +101,9 @@ namespace CoreScript.CustomGrids
             return grid[SectionToIndex(radius, angle)];
         }
 
-        public override bool InGrid(int radius, int angle = 0)
+        public bool InGrid(int radius)
         {
-            return radius > 0 && radius < Width;
+            return radius > -1 && radius < Width;
         }
 
         public override void Clear()
@@ -118,6 +119,28 @@ namespace CoreScript.CustomGrids
                 Object go = tm.gameObject;
                 Object.DestroyImmediate(go);
             }
+        }
+
+        public void SetTextToIndex()
+        {
+            for (int i = 0; i < gridText.Length; i++)
+            {
+                gridText[i].text = i.ToString();
+            }
+        }
+
+        public bool GetOldData(RadialGrid2D<TGridObject> grids)
+        {
+            if (diemention.x < grids.diemention.x || diemention.y != grids.diemention.y || grids.grid[0].GetType() != grid[0].GetType())
+                return false;
+
+            for (int index = 0; index < grids.grid.Length; index++)
+            {
+                grid[index] = grids.grid[index];
+                gridText[index] = grids.gridText[index];
+            }
+
+            return true;
         }
     }
 }

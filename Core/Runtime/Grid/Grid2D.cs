@@ -62,7 +62,7 @@ namespace CoreScript.CustomGrids
             return grid[x, y];
         }
 
-        public override bool InGrid(int x, int y)
+        public bool InGrid(int x, int y)
         {
             return x >= 0 && x < Width && y >= 0 && y < Height;
         }
@@ -84,23 +84,43 @@ namespace CoreScript.CustomGrids
                 }
             }
         }
+
+        public bool GetOldData(Grid2D<TGridObject> grids)
+        {
+            if (diemention.x < grids.diemention.x || diemention.y < grids.diemention.y || grids.grid[0, 0].GetType() != grid[0, 0].GetType())
+                return false;
+
+            for (int x = 0; x < grids.diemention.x; x++)
+            {
+                for (int y = 0; y < grids.diemention.y; y++)
+                {
+                    grid[x, y] = grids.grid[x, y];
+                    gridText[x, y] = grids.gridText[x, y];
+                }
+            }
+            return true;
+        }
     }
 
     public abstract class Grids<TGridObject>
     {
+        #region Fields
         protected Vector3Int diemention;
         protected Vector3 gridSize;
         protected TGridObject[,,] grid;
-        protected TextMesh[,,] gridText;
+        protected TextMeshPro[,,] gridText;
         protected Vector3 originPos;
-
+        #endregion
+        #region Getters
         public int Width { get { return diemention.x; } }
         public int Height { get { return diemention.y; } }
         public int Depth { get { return diemention.z; } }
+        public Vector3Int Diemention { get { return diemention; } }
         public Vector3 GridSize { get { return gridSize; } }
         public TGridObject[,,] Grid { get { return grid; } }
-        public TextMesh[,,] GridText { get { return gridText; } }
-
+        public TextMeshPro[,,] GridText { get { return gridText; } }
+        #endregion
+        #region Constructors
         public Grids(int width, int height, float gridSize, Vector3 originPos)
         {
             diemention = new Vector3Int(width, height, 0);
@@ -128,16 +148,19 @@ namespace CoreScript.CustomGrids
             gridSize = new Vector3(gridWidthSize, gridHeightSize, gridDepthSize);
             this.originPos = originPos;
         }
-
+        #endregion
+        #region AbstractMethods
         public abstract Vector3 GridToWorldPos(int x, int y);
         public abstract void WorldPosToGrid(Vector3 position, out int x, out int y);
         public abstract void SetObject(int x, int y, TGridObject gridObject);
+        public abstract TGridObject GetObject(int x, int y);
+        #endregion
+        #region PreDefineMethods
         public void SetObject(Vector3 position, TGridObject gridObject)
         {
             WorldPosToGrid(position, out int x, out int y);
             SetObject(x, y, gridObject);
         }
-        public abstract TGridObject GetObject(int x, int y);
 
         public TGridObject GetObject(Vector3 position)
         {
@@ -145,7 +168,47 @@ namespace CoreScript.CustomGrids
             return GetObject(x, y);
         }
 
-        public abstract bool InGrid(int x, int y);
-        public abstract void Clear();
+        public bool InGrid(int x, int y, int z) { return x >= 0 && x < diemention.x && y >= 0 && y < diemention.y && z >= 0 && z < diemention.z; }
+        #endregion
+        #region VirtualFunctions
+        public virtual void Clear()
+        {
+            for (int x = 0; x < diemention.x; x++)
+            {
+                for (int y = 0; y < diemention.y; y++)
+                {
+                    for (int z = 0; z < diemention.z; z++)
+                    {
+                        grid[x, y, z] = default;
+                        TextMeshPro tm = gridText[x, y, z];
+                        if (tm == null)
+                            continue;
+
+                        Object obj = tm.gameObject;
+                        gridText[x, y, z] = null;
+                        Object.DestroyImmediate(obj);
+                    }
+                }
+            }
+        }
+        public virtual bool GetOldData(Grids<TGridObject> grids)
+        {
+            if (diemention.x < grids.diemention.x || diemention.y < grids.diemention.y || diemention.z < grids.diemention.z || grids.grid[0, 0, 0].GetType() != grid[0, 0, 0].GetType())
+                return false;
+
+            for (int x = 0; x < grids.diemention.x; x++)
+            {
+                for (int y = 0; y < grids.diemention.y; y++)
+                {
+                    for (int z = 0; z < grids.diemention.z; z++)
+                    {
+                        grid[x, y, z] = grids.grid[x, y, z];
+                        gridText[x, y, z] = grids.gridText[x, y, z];
+                    }
+                }
+            }
+            return true;
+        }
+        #endregion
     }
 }

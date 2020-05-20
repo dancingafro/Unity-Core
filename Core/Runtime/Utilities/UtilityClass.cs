@@ -11,49 +11,31 @@ namespace CoreScript.Utility
     {
         public enum Pos2D
         {
+            XYZ,
             XY,
             XZ,
             YZ
         }
 
-        public static Vector3 MousePosition(float zPos, Pos2D pos2D = Pos2D.XY)
+        public static Vector3 MousePosition(Camera camera)
         {
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = zPos;
-            switch (pos2D)
-            {
-                case Pos2D.XZ:
-                    mousePos.z = mousePos.y;
-                    mousePos.y = 0;
-                    break;
-                case Pos2D.YZ:
-                    Swap(ref mousePos.x, ref mousePos.y);
-                    mousePos.z = mousePos.y;
-                    mousePos.y = 0;
-                    break;
-            }
-            return mousePos;
+            return new Vector3(Input.mousePosition.x, Input.mousePosition.y, camera.transform.position.z);
         }
 
-        public static Vector3 ScreenToWorld3DPos(Camera camera, Vector3 screenPos)
+        public static Vector3 ScreenToWorldPos(Camera camera, Vector3 screenPos, Pos2D pos2D = Pos2D.XY)
         {
-            return camera.ScreenToWorldPoint(screenPos);
-        }
-
-        public static Vector3 ScreenToWorld2DPos(Camera camera, Vector3 screenPos, Pos2D pos2D = Pos2D.XY)
-        {
-            Vector3 worldPos = ScreenToWorld3DPos(camera, screenPos);
+            Vector3 worldPos = camera.ScreenToWorldPoint(screenPos);
 
             switch (pos2D)
             {
+                case Pos2D.XY:
+                    worldPos.z = 0;
+                    break;
                 case Pos2D.YZ:
                     worldPos.x = 0;
                     break;
                 case Pos2D.XZ:
                     worldPos.y = 0;
-                    break;
-                default:
-                    worldPos.z = 0;
                     break;
             }
 
@@ -71,7 +53,7 @@ namespace CoreScript.Utility
             GameObject gameObject = new GameObject("World_Text", typeof(TextMeshPro));
 
             Transform transform = gameObject.transform;
-            transform.parent = parent;
+            transform.SetParent(parent);
             transform.localPosition = localPosition;
 
             TextMeshPro textMesh = transform.GetComponent<TextMeshPro>();
