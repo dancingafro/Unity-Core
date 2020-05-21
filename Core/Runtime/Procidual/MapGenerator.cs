@@ -15,7 +15,8 @@ namespace CoreScript.Procidual
             NoiseMap,
             ColorMap,
             Mesh,
-            FalloffMap
+            FalloffMap,
+            CircularfilterMap
         }
         public Drawmode drawmode;
         public Noise.NormalizeMode normalizeMode;
@@ -36,6 +37,7 @@ namespace CoreScript.Procidual
         public Vector2 offset = Vector2.zero;
 
         public bool useFalloffMap = false;
+        public bool useFillterMap = false;
 
         public float meshHeightMultiplier = 1;
         public AnimationCurve heightCurve;
@@ -44,7 +46,7 @@ namespace CoreScript.Procidual
 
         public CustomColourGradient regions;
 
-        float[,] falloffMap;
+        float[,] falloffMap, fillterMap;
 
         Queue<ThreadInfo<MapData>> mapThreadInfoQueue = new Queue<ThreadInfo<MapData>>();
         Queue<ThreadInfo<MeshData>> meshThreadInfoQueue = new Queue<ThreadInfo<MeshData>>();
@@ -52,6 +54,7 @@ namespace CoreScript.Procidual
         void Awake()
         {
             falloffMap = Noise.GenerateFalloffMap(mapChunkSize + 2);
+            fillterMap = Noise.GenerateCircularFilterMap(mapChunkSize + 2, 10);
         }
 
         public void DrawMapInEditor()
@@ -69,6 +72,9 @@ namespace CoreScript.Procidual
                     break;
                 case Drawmode.FalloffMap:
                     display.DrawTexture(UtilityClass.TextureFromHeight(Noise.GenerateFalloffMap(mapChunkSize + 2)));
+                    break;
+                case Drawmode.CircularfilterMap:
+                    display.DrawTexture(UtilityClass.TextureFromHeight(Noise.GenerateCircularFilterMap(mapChunkSize + 2, 10)));
                     break;
                 default:
                     display.DrawTexture(UtilityClass.TextureFromHeight(mapData.heightMap));
@@ -127,6 +133,8 @@ namespace CoreScript.Procidual
                 {
                     if (useFalloffMap)
                         noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
+                    if (useFillterMap)
+                        noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - fillterMap[x, y]);
 
                     colors[y * mapChunkSize + x] = regions.Evaluate(Mathf.InverseLerp(0, 1, noiseMap[x, y]));
                 }
@@ -144,6 +152,8 @@ namespace CoreScript.Procidual
                 octaves = 0;
             if (useFalloffMap)
                 falloffMap = Noise.GenerateFalloffMap(mapChunkSize + 2);
+            if (useFillterMap)
+                fillterMap = Noise.GenerateCircularFilterMap(mapChunkSize + 2, 10);
         }
 
         struct ThreadInfo<T>

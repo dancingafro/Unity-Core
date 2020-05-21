@@ -9,12 +9,22 @@ namespace CoreScript.Utility
 {
     public static class UtilityClass
     {
-        public enum Pos2D
+        static Dictionary<PositionSpace, Vector3> positionSpaceValue;
+        public static Dictionary<PositionSpace, Vector3> PositionSpaceValue
         {
-            XYZ,
-            XY,
-            XZ,
-            YZ
+            get
+            {
+                if (positionSpaceValue == null)
+                    positionSpaceValue = new Dictionary<PositionSpace, Vector3>
+                    {
+                        { PositionSpace.xyz, new Vector3(1, 1, 1) },
+                        { PositionSpace.xy, new Vector3(1, 1, 0) },
+                        { PositionSpace.xz, new Vector3(1, 0, 1) },
+                        { PositionSpace.yz, new Vector3(0, 1, 1) }
+                    };
+
+                return positionSpaceValue;
+            }
         }
 
         public static Vector3 MousePosition(Camera camera)
@@ -22,24 +32,9 @@ namespace CoreScript.Utility
             return new Vector3(Input.mousePosition.x, Input.mousePosition.y, camera.transform.position.z);
         }
 
-        public static Vector3 ScreenToWorldPos(Camera camera, Vector3 screenPos, Pos2D pos2D = Pos2D.XY)
+        public static Vector3 ScreenToWorldPos(Camera camera, Vector3 screenPos)
         {
-            Vector3 worldPos = camera.ScreenToWorldPoint(screenPos);
-
-            switch (pos2D)
-            {
-                case Pos2D.XY:
-                    worldPos.z = 0;
-                    break;
-                case Pos2D.YZ:
-                    worldPos.x = 0;
-                    break;
-                case Pos2D.XZ:
-                    worldPos.y = 0;
-                    break;
-            }
-
-            return worldPos;
+            return camera.ScreenToWorldPoint(screenPos);
         }
 
         public static TextMeshPro CreateWorldText(string Text, Color color, Transform parent = null, Vector3 localPosition = default, int fontSize = 40, TextAlignmentOptions textAlignment = TextAlignmentOptions.Left, int SortingOrfer = 0)
@@ -50,7 +45,7 @@ namespace CoreScript.Utility
 
         public static TextMeshPro CreateWorldText(Color color, string Text, Transform parent, Vector3 localPosition, int fontSize, TextAlignmentOptions textAlignment, int sortingOrder)
         {
-            GameObject gameObject = new GameObject("World_Text", typeof(TextMeshPro));
+            GameObject gameObject = new GameObject("World_Text", typeof(TextMeshPro), typeof(Billboard));
 
             Transform transform = gameObject.transform;
             transform.SetParent(parent);

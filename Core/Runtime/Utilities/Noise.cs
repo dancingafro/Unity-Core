@@ -95,11 +95,28 @@ namespace CoreScript.Utility
             return map;
         }
 
+        public static float[,] GenerateCircularFilterMap(int size, float radius, float falloffOffset = .01f)
+        {
+            float[,] map = new float[size, size];
+
+            Vector3 center = new Vector3(size * .5f, size * .5f);
+            float radiusSqr = radius * radius;
+            float maxDisSqr = (new Vector3(size, size) - center).sqrMagnitude;
+            for (int i = 0; i < size; ++i)
+            {
+                for (int j = 0; j < size; ++j)
+                {
+                    Vector3 relative = new Vector3(i, j) - center;
+                    map[i, j] = Mathf.Clamp01((Mathf.Max((Mathf.Max(relative.sqrMagnitude - radiusSqr, 0) / maxDisSqr) / falloffOffset, 0) - 1f) * -1f);
+                }
+            }
+
+            return map;
+        }
+
         static float Evaluate(float value)
         {
-            float a = 3;
-            float b = 2.2f;
-
+            float a = 3, b = 2.2f;
             return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
         }
     }

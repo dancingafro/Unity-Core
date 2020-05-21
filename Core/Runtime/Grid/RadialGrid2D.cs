@@ -15,10 +15,36 @@ namespace CoreScript.CustomGrids
         public new TGridObject[] Grid { get { return grid; } }
         public new TextMeshPro[] GridText { get { return gridText; } }
 
+        public new Vector3 CenterOffset(int radius, int angle, Vector3 gridPos)
+        {
+            if (radius == 0)
+                return Vector3.zero;
+
+            int totalAngleSec = radius * Height;
+            float onePortionOfAngle = 360f * 1 / totalAngleSec;
+            float tempDeg = (angle * onePortionOfAngle + onePortionOfAngle * .5f) * Mathf.Deg2Rad;
+
+            Vector3 dir;
+            switch (positionSpace)
+            {
+                case PositionSpace.xz:
+                    dir = new Vector3(Mathf.Cos(tempDeg), 0, Mathf.Sin(tempDeg));
+                    break;
+                case PositionSpace.yz:
+                    dir = new Vector3(0, Mathf.Cos(tempDeg), Mathf.Sin(tempDeg));
+                    break;
+                default:
+                    dir = new Vector3(Mathf.Cos(tempDeg), Mathf.Sin(tempDeg));
+                    break;
+            }
+
+            return (dir * radius * GridSize.x + originPos) - gridPos;
+        }
+
         //Width = radius
         //Height = angleSecPerRadiusSec
         //gridSize = radiusSize
-        public RadialGrid2D(int radiusSec, int angleSecPerRadiusSec, float radiusSize, Vector3 originPos, Transform parent) : base(radiusSec, angleSecPerRadiusSec, radiusSize, originPos)
+        public RadialGrid2D(int radiusSec, int angleSecPerRadiusSec, float radiusSize, Vector3 originPos, PositionSpace positionSpace, Transform parent) : base(radiusSec, angleSecPerRadiusSec, radiusSize, originPos, positionSpace)
         {
             int total = 1;
 
@@ -39,15 +65,7 @@ namespace CoreScript.CustomGrids
                     int index = startOfSec + currAngleSec;
                     grid[index] = default;
                     Vector3 gridPos = currRadiusSec == 0 ? gridPos = Vector3.zero + originPos : GridToWorldPos(currRadiusSec, currAngleSec);
-                    int totalAngleSec = currRadiusSec * Height;
-                    Vector3 CenterOffSet = Vector3.zero;
-                    if (currRadiusSec != 0)
-                    {
-                        float onePortionOfAngle = 360f * 1 / totalAngleSec;
-                        float tempDeg = (currAngleSec * onePortionOfAngle + onePortionOfAngle * .5f) * Mathf.Deg2Rad;
-                        CenterOffSet = (new Vector3(-Mathf.Cos(tempDeg), -Mathf.Sin(tempDeg)) * currRadiusSec * GridSize.x + originPos) - gridPos;
-                    }
-                    gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos + CenterOffSet, (int)gridSize.x * 10, TextAlignmentOptions.Center, 0);
+                    gridText[index] = UtilityClass.CreateWorldText(grid[index].ToString(), Color.white, parent, gridPos + CenterOffset(currRadiusSec, currAngleSec, gridPos), (int)gridSize.x * 10, TextAlignmentOptions.Center, 0);
                 }
             }
         }
@@ -70,7 +88,22 @@ namespace CoreScript.CustomGrids
 
             int totalAngleSec = radius * Height;
             float radAngle = Mathf.Deg2Rad * (360f * ((float)angle / totalAngleSec) + 180f) % 360f;
-            return new Vector3(Mathf.Cos(radAngle), Mathf.Sin(radAngle)) * radius * GridSize.x + originPos;
+
+            Vector3 dir;
+            switch (positionSpace)
+            {
+                case PositionSpace.xz:
+                    dir = new Vector3(Mathf.Cos(radAngle), 0, Mathf.Sin(radAngle));
+                    break;
+                case PositionSpace.yz:
+                    dir = new Vector3(0, Mathf.Cos(radAngle), Mathf.Sin(radAngle));
+                    break;
+                default:
+                    dir = new Vector3(Mathf.Cos(radAngle), Mathf.Sin(radAngle));
+                    break;
+            }
+
+            return dir * radius * GridSize.x + originPos;
         }
 
         public override void WorldPosToGrid(Vector3 position, out int radius, out int angle)
@@ -78,7 +111,23 @@ namespace CoreScript.CustomGrids
             Vector3 relativePos = position - originPos;
             radius = Mathf.FloorToInt(relativePos.magnitude / gridSize.x);
             int totalAngleSec = radius == 0 ? 1 : (radius - 1) * Height + Height;
-            float angleDeg = Mathf.Atan2(relativePos.y, relativePos.x) * Mathf.Rad2Deg;
+
+            float angleRad;
+
+            switch (positionSpace)
+            {
+                case PositionSpace.xz:
+                    angleRad = Mathf.Atan2(relativePos.z, relativePos.x);
+                    break;
+                case PositionSpace.yz:
+                    angleRad = Mathf.Atan2(relativePos.z, relativePos.y);
+                    break;
+                default:
+                    angleRad = Mathf.Atan2(relativePos.y, relativePos.x);
+                    break;
+            }
+
+            float angleDeg = angleRad * Mathf.Rad2Deg;
             if (angleDeg < 0f)
                 angleDeg += 360f;
             angle = radius == 0 ? 0 : 1 + Mathf.FloorToInt(totalAngleSec * angleDeg / 360);

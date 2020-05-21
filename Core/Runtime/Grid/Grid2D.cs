@@ -15,19 +15,19 @@ namespace CoreScript.CustomGrids
         public new TGridObject[,] Grid { get { return grid; } }
         public new TextMeshPro[,] GridText { get { return gridText; } }
 
-        public Grid2D(int width, int height, float gridSize, Vector3 originPos, Transform parent) : base(width, height, gridSize, originPos)
+        public Grid2D(int width, int height, float gridSize, Vector3 originPos, PositionSpace positionSpace, Transform parent) : base(width, height, gridSize, originPos, positionSpace)
         {
             grid = new TGridObject[Width, Height];
             gridText = new TextMeshPro[Width, Height];
 
-            for (int x = 0; x < Width; ++x)
+            for (int horizontal = 0; horizontal < Width; ++horizontal)
             {
-                for (int y = 0; y < Height; ++y)
+                for (int vertical = 0; vertical < Height; ++vertical)
                 {
-                    grid[x, y] = default;
-                    gridText[x, y] = UtilityClass.CreateWorldText(grid[x, y].ToString(), Color.white, parent, GridToWorldPos(x, y) + this.gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
-                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x + 1, y), Color.white, 100f);
-                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x, y + 1), Color.white, 100f);
+                    grid[horizontal, vertical] = default;
+                    gridText[horizontal, vertical] = UtilityClass.CreateWorldText(grid[horizontal, vertical].ToString(), Color.white, parent, GridToWorldPos(horizontal, vertical) + this.gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
+                    Debug.DrawLine(GridToWorldPos(horizontal, vertical), GridToWorldPos(horizontal + 1, vertical), Color.white, 100f);
+                    Debug.DrawLine(GridToWorldPos(horizontal, vertical), GridToWorldPos(horizontal, vertical + 1), Color.white, 100f);
                 }
             }
 
@@ -35,19 +35,20 @@ namespace CoreScript.CustomGrids
             Debug.DrawLine(GridToWorldPos(Width, 0), GridToWorldPos(Width, Height), Color.white, 100f);
         }
 
-        public Grid2D(int width, int height, float gridWidthSize, float gridHeightSize, Vector3 originPos, Transform parent) : base(width, height, gridWidthSize, gridHeightSize, originPos)
+        public Grid2D(int width, int height, float gridWidthSize, float gridHeightSize, Vector3 originPos, PositionSpace positionSpace, Transform parent) : base(width, height, gridWidthSize, gridHeightSize, originPos, positionSpace)
         {
             grid = new TGridObject[Width, Height];
             gridText = new TextMeshPro[Width, Height];
 
-            for (int x = 0; x < Width; ++x)
+            for (int horizontal = 0; horizontal < Width; ++horizontal)
             {
-                for (int y = 0; y < Height; ++y)
+                for (int vertical = 0; vertical < Height; ++vertical)
                 {
-                    grid[x, y] = default;
-                    gridText[x, y] = UtilityClass.CreateWorldText(grid[x, y].ToString(), Color.white, parent, GridToWorldPos(x, y) + gridSize * .5f, 10, TextAlignmentOptions.Center, 0);
-                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x + 1, y), Color.white, 100f);
-                    Debug.DrawLine(GridToWorldPos(x, y), GridToWorldPos(x, y + 1), Color.white, 100f);
+                    grid[horizontal, vertical] = default;
+                    Vector3 gridPos = GridToWorldPos(horizontal, vertical);
+                    gridText[horizontal, vertical] = UtilityClass.CreateWorldText(grid[horizontal, vertical].ToString(), Color.white, parent, gridPos + CenterOffset, 10, TextAlignmentOptions.Center, 0);
+                    Debug.DrawLine(gridPos, GridToWorldPos(horizontal + 1, vertical), Color.white, 100f);
+                    Debug.DrawLine(gridPos, GridToWorldPos(horizontal, vertical + 1), Color.white, 100f);
                 }
             }
 
@@ -55,53 +56,79 @@ namespace CoreScript.CustomGrids
             Debug.DrawLine(GridToWorldPos(Width, 0), GridToWorldPos(Width, Height), Color.white, 100f);
         }
 
-        public override Vector3 GridToWorldPos(int x, int y)
+        public override Vector3 GridToWorldPos(int horizontal, int vertical)
         {
-            return new Vector3(x * gridSize.x, y * gridSize.y) + originPos;
+            Vector3 worldPos;
+
+            switch (positionSpace)
+            {
+                case PositionSpace.xz:
+                    worldPos = new Vector3(horizontal * Width, 0, vertical * Height);
+                    break;
+                case PositionSpace.yz:
+                    worldPos = new Vector3(0, horizontal * Width, vertical * Height);
+                    break;
+                default:
+                    worldPos = new Vector3(horizontal * Width, vertical * Height);
+                    break;
+            }
+
+            return worldPos + originPos;
         }
 
-        public override void WorldPosToGrid(Vector3 position, out int x, out int y)
+        public override void WorldPosToGrid(Vector3 position, out int horizontal, out int Vertical)
         {
-            Vector3 relativePos = (position - originPos);
-            x = Mathf.FloorToInt(relativePos.x / gridSize.x);
-            y = Mathf.FloorToInt(relativePos.y / gridSize.y);
+            Vector3 relativePos = position - originPos;
+            switch (positionSpace)
+            {
+                case PositionSpace.xz:
+                    horizontal = Mathf.FloorToInt(relativePos.x / gridSize.x);
+                    Vertical = Mathf.FloorToInt(relativePos.z / gridSize.z);
+                    return;
+                case PositionSpace.yz:
+                    horizontal = Mathf.FloorToInt(relativePos.y / gridSize.y);
+                    Vertical = Mathf.FloorToInt(relativePos.z / gridSize.z);
+                    return;
+            }
+            horizontal = Mathf.FloorToInt(relativePos.x / gridSize.x);
+            Vertical = Mathf.FloorToInt(relativePos.y / gridSize.y);
         }
 
-        public override void SetObject(int x, int y, TGridObject gridObject)
+        public override void SetObject(int horizontal, int vertical, TGridObject gridObject)
         {
-            if (!InGrid(x, y))
+            if (!InGrid(horizontal, vertical))
                 return;
 
-            grid[x, y] = gridObject;
-            gridText[x, y].text = gridObject.ToString();
+            grid[horizontal, vertical] = gridObject;
+            gridText[horizontal, vertical].text = gridObject.ToString();
         }
 
-        public override TGridObject GetObject(int x, int y)
+        public override TGridObject GetObject(int horizontal, int vertical)
         {
-            if (!InGrid(x, y))
+            if (!InGrid(horizontal, vertical))
                 return default;
 
-            return grid[x, y];
+            return grid[horizontal, vertical];
         }
 
-        public bool InGrid(int x, int y)
+        public bool InGrid(int horizontal, int vertical)
         {
-            return x >= 0 && x < Width && y >= 0 && y < Height;
+            return horizontal >= 0 && horizontal < Width && vertical >= 0 && vertical < Height;
         }
 
         public override void Clear()
         {
-            for (int x = 0; x < diemention.x; x++)
+            for (int horizontal = 0; horizontal < Width; horizontal++)
             {
-                for (int y = 0; y < diemention.y; y++)
+                for (int vertical = 0; vertical < Height; vertical++)
                 {
-                    grid[x, y] = default;
-                    TextMeshPro tm = gridText[x, y];
+                    grid[horizontal, vertical] = default;
+                    TextMeshPro tm = gridText[horizontal, vertical];
                     if (tm == null)
                         continue;
 
                     Object obj = tm.gameObject;
-                    gridText[x, y] = null;
+                    gridText[horizontal, vertical] = null;
                     Object.DestroyImmediate(obj);
                 }
             }
@@ -109,15 +136,15 @@ namespace CoreScript.CustomGrids
 
         public bool GetOldData(Grid2D<TGridObject> grids)
         {
-            if (diemention.x < grids.diemention.x || diemention.y < grids.diemention.y || grids.grid[0, 0].GetType() != grid[0, 0].GetType())
+            if (Width < grids.Width || Height < grids.Height || grids.grid[0, 0].GetType() != grid[0, 0].GetType())
                 return false;
 
-            for (int x = 0; x < grids.diemention.x; x++)
+            for (int horizontal = 0; horizontal < grids.Width; horizontal++)
             {
-                for (int y = 0; y < grids.diemention.y; y++)
+                for (int veritcal = 0; veritcal < grids.Height; veritcal++)
                 {
-                    grid[x, y] = grids.grid[x, y];
-                    gridText[x, y] = grids.gridText[x, y];
+                    grid[horizontal, veritcal] = grids.grid[horizontal, veritcal];
+                    gridText[horizontal, veritcal] = grids.gridText[horizontal, veritcal];
                 }
             }
             return true;
@@ -132,40 +159,97 @@ namespace CoreScript.CustomGrids
         protected TGridObject[,,] grid;
         protected TextMeshPro[,,] gridText;
         protected Vector3 originPos;
+        protected PositionSpace positionSpace;
         #endregion
         #region Getters
-        public int Width { get { return diemention.x; } }
-        public int Height { get { return diemention.y; } }
+        public int Width
+        {
+            get
+            {
+                switch (positionSpace)
+                {
+                    case PositionSpace.yz:
+                        return diemention.y;
+                }
+                return diemention.x;
+            }
+        }
+        public int Height
+        {
+            get
+            {
+                switch (positionSpace)
+                {
+                    case PositionSpace.xy:
+                        return diemention.y;
+                }
+                return diemention.z;
+            }
+        }
         public int Depth { get { return diemention.z; } }
         public Vector3Int Diemention { get { return diemention; } }
         public Vector3 GridSize { get { return gridSize; } }
+        public PositionSpace PositionSpace { get { return positionSpace; } }
         public TGridObject[,,] Grid { get { return grid; } }
         public TextMeshPro[,,] GridText { get { return gridText; } }
+        public virtual Vector3 CenterOffset { get { return gridSize * .5f; } }
         #endregion
         #region Constructors
-        public Grids(int width, int height, float gridSize, Vector3 originPos)
+        public Grids(int width, int height, float gridSize, Vector3 originPos, PositionSpace positionSpace)
         {
-            diemention = new Vector3Int(width, height, 0);
-            this.gridSize = new Vector3(gridSize, gridSize, gridSize);
+            this.positionSpace = positionSpace;
             this.originPos = originPos;
+            switch (positionSpace)
+            {
+                case PositionSpace.xyz:
+                case PositionSpace.xy:
+                    diemention = new Vector3Int(width, height, 0);
+                    this.gridSize = new Vector3(gridSize, gridSize);
+                    break;
+                case PositionSpace.xz:
+                    diemention = new Vector3Int(width, 0, height);
+                    this.gridSize = new Vector3(gridSize, 0, gridSize);
+                    break;
+                case PositionSpace.yz:
+                    diemention = new Vector3Int(0, width, height);
+                    this.gridSize = new Vector3(0, gridSize, gridSize);
+                    break;
+            }
+        }
+
+        public Grids(int width, int height, float gridWidthSize, float gridHeightSize, Vector3 originPos, PositionSpace positionSpace)
+        {
+            this.positionSpace = positionSpace;
+            this.originPos = originPos;
+            switch (positionSpace)
+            {
+                case PositionSpace.xyz:
+                case PositionSpace.xy:
+                    diemention = new Vector3Int(width, height, 0);
+                    gridSize = new Vector3(gridWidthSize, gridHeightSize);
+                    break;
+                case PositionSpace.xz:
+                    diemention = new Vector3Int(width, 0, height);
+                    gridSize = new Vector3(gridWidthSize, 0, gridHeightSize);
+                    break;
+                case PositionSpace.yz:
+                    diemention = new Vector3Int(0, width, height);
+                    gridSize = new Vector3(0, gridWidthSize, gridHeightSize);
+                    break;
+            }
         }
 
         public Grids(int width, int height, int depth, float gridSize, Vector3 originPos)
         {
+            positionSpace = PositionSpace.xyz;
             diemention = new Vector3Int(width, height, depth);
             this.gridSize = new Vector3(gridSize, gridSize, gridSize);
             this.originPos = originPos;
         }
 
-        public Grids(int width, int height, float gridWidthSize, float gridHeightSize, Vector3 originPos)
-        {
-            diemention = new Vector3Int(width, height, 0);
-            gridSize = new Vector3(gridWidthSize, gridHeightSize);
-            this.originPos = originPos;
-        }
-
         public Grids(int width, int height, int depth, float gridWidthSize, float gridHeightSize, float gridDepthSize, Vector3 originPos)
         {
+            positionSpace = PositionSpace.xyz;
             diemention = new Vector3Int(width, height, depth);
             gridSize = new Vector3(gridWidthSize, gridHeightSize, gridDepthSize);
             this.originPos = originPos;
@@ -193,6 +277,7 @@ namespace CoreScript.CustomGrids
         public bool InGrid(int x, int y, int z) { return x >= 0 && x < diemention.x && y >= 0 && y < diemention.y && z >= 0 && z < diemention.z; }
         #endregion
         #region VirtualFunctions
+
         public virtual void Clear()
         {
             for (int x = 0; x < diemention.x; x++)
