@@ -6,6 +6,35 @@ namespace CoreScript.Factories
 {
     public static class Factory
     {
+        static readonly Vector3 Vector3yDown = new Vector3(0, -1);
+
+        static Quaternion[] cachedQuaternionEulers;
+        static Quaternion[] CachedQuaternionEulers
+        {
+            get
+            {
+                if (cachedQuaternionEulers != null)
+                    return cachedQuaternionEulers;
+
+                cachedQuaternionEulers = new Quaternion[360];
+                for (int i = 0; i < 360; i++)
+                    cachedQuaternionEulers[i] = Quaternion.Euler(0, 0, i);
+
+                return cachedQuaternionEulers;
+            }
+        }
+
+        static Quaternion GetQuaternionEuler(float angle)
+        {
+            int ang = Mathf.RoundToInt(angle);
+
+            ang %= 360;
+            if (ang < 0)
+                ang += 360;
+
+            return CachedQuaternionEulers[ang];
+        }
+
         public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail)
         {
             AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
@@ -65,6 +94,84 @@ namespace CoreScript.Factories
             }
 
             return meshData;
+        }
+        public static Mesh CreateEmptyMesh()
+        {
+            return new Mesh
+            {
+                vertices = new Vector3[0],
+                uv = new Vector2[0],
+                triangles = new int[0]
+            };
+        }
+
+        public static void CreateEmptyMeshArrays(int quadCount, out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
+        {
+            vertices = new Vector3[4 * quadCount];
+            uvs = new Vector2[4 * quadCount];
+            triangles = new int[6 * quadCount];
+        }
+
+        public static Mesh CreateMesh(Vector3 pos, float rot, Vector3 baseSize, Vector2 uv00, Vector2 uv11)
+        {
+            return AddToMesh(null, pos, rot, baseSize, uv00, uv11);
+        }
+
+        public static Mesh AddToMesh(Mesh mesh, Vector3 pos, float rot, Vector3 baseSize, Vector2 uv00, Vector2 uv11)
+        {
+            if (mesh == null)
+                mesh = CreateEmptyMesh();
+
+            Vector3[] vertices = new Vector3[4 + mesh.vertices.Length];
+            Vector2[] uvs = new Vector2[4 + mesh.uv.Length];
+            int[] triangles = new int[6 + mesh.triangles.Length];
+
+            mesh.vertices.CopyTo(vertices, 0);
+            mesh.uv.CopyTo(uvs, 0);
+            mesh.triangles.CopyTo(triangles, 0);
+
+            int index = vertices.Length / 4 - 1;
+
+            int vIndex = index * 4;
+            int vIndex1 = vIndex + 1;
+            int vIndex2 = vIndex + 2;
+            int vIndex3 = vIndex + 3;
+
+            baseSize *= .5f;
+
+            if (baseSize.x != baseSize.y)
+            {
+                vertices[vIndex] = pos + GetQuaternionEuler(rot) * new Vector2(-baseSize.x, baseSize.y);
+                vertices[vIndex] = pos + GetQuaternionEuler(rot) * baseSize;
+                vertices[vIndex] = pos + GetQuaternionEuler(rot) * new Vector2(baseSize.x, -baseSize.y);
+                vertices[vIndex] = pos + GetQuaternionEuler(rot) * new Vector2(-baseSize.x, -baseSize.y);
+            }
+            else
+            {
+                vertices[vIndex] = pos + GetQuaternionEuler(rot - 270) * baseSize;
+                vertices[vIndex] = pos + GetQuaternionEuler(rot) * baseSize;
+                vertices[vIndex] = pos + GetQuaternionEuler(rot - 90) * baseSize;
+                vertices[vIndex] = pos + GetQuaternionEuler(rot - 180) * baseSize;
+            }
+            uvs[vIndex] = new Vector2(uv00.x, uv11.y);
+            uvs[vIndex] = new Vector2(uv11.x, uv11.y);
+            uvs[vIndex] = new Vector2(uv11.x, uv00.y);
+            uvs[vIndex] = new Vector2(uv00.x, uv00.y);
+
+            int triIndex = (triangles.Length / 6 - 1) * 6;
+
+            triangles[triIndex] = vIndex;
+            triangles[triIndex + 1] = vIndex1;
+            triangles[triIndex + 2] = vIndex2;
+            triangles[triIndex + 3] = vIndex2;
+            triangles[triIndex + 4] = vIndex3;
+            triangles[triIndex + 5] = vIndex;
+
+            mesh.vertices = vertices;
+            mesh.uv = uvs;
+            mesh.triangles = triangles;
+
+            return mesh;
         }
     }
 

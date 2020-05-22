@@ -34,9 +34,8 @@ namespace CoreScript.Singleton
 
                         if (_instance == null)
                         {
-                            GameObject singleton = new GameObject();
+                            GameObject singleton = new GameObject("(singleton) " + typeof(T));
                             _instance = singleton.AddComponent<T>();
-                            singleton.name = "(singleton) " + typeof(T).ToString();
 
                             DontDestroyOnLoad(singleton);
 

@@ -74,7 +74,7 @@ namespace CoreScript.Procidual
                     display.DrawTexture(UtilityClass.TextureFromHeight(Noise.GenerateFalloffMap(mapChunkSize + 2)));
                     break;
                 case Drawmode.CircularfilterMap:
-                    display.DrawTexture(UtilityClass.TextureFromHeight(Noise.GenerateCircularFilterMap(mapChunkSize + 2, 10)));
+                    display.DrawTexture(UtilityClass.TextureFromHeight(Noise.GenerateCircularFilterMap(mapChunkSize + 2, 10, .05f)));
                     break;
                 default:
                     display.DrawTexture(UtilityClass.TextureFromHeight(mapData.heightMap));
