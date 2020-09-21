@@ -1,7 +1,7 @@
 {
   "name": "com.desmond.corescript",
   "version": "1.2.2",
-  "displayName": "Custom Core Script",
+  "displayName": "Unity Core",
   "description": "Core Script included:\n\tUI\n\tUI Animation\n\t\n\tUtilities",
   "keywords": [
     "UI",
