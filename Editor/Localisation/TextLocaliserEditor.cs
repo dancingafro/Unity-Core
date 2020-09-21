@@ -21,6 +21,19 @@ namespace CoreScript.Localisation
 
         public string key, value;
 
+        LocalisationManager localisationManager;
+
+        LocalisationManager LocalisationManager
+        {
+            get
+            {
+                if (!localisationManager)
+                    localisationManager = LocalisationManager.Instance;
+
+                return localisationManager;
+            }
+        }
+
         public void OnGUI()
         {
             key = EditorGUILayout.TextField("Key : ", key);
@@ -33,10 +46,10 @@ namespace CoreScript.Localisation
 
             if (GUILayout.Button("Add"))
             {
-                if (LocalisationSystem.GetLocalisedValue(key) != string.Empty)
-                    LocalisationSystem.Replace(key, value);
+                if (LocalisationManager.GetLocalisedValue(key) != string.Empty)
+                    LocalisationManager.Replace(key, value);
                 else
-                    LocalisationSystem.Add(key, value);
+                    LocalisationManager.Add(key, value);
             }
             maxSize = minSize = new Vector2(460, 250);
         }
@@ -60,11 +73,25 @@ namespace CoreScript.Localisation
 
         public string value = "";
         public Vector2 scroll;
+        LocalisationManager localisationManager;
+
+        LocalisationManager LocalisationManager
+        {
+            get
+            {
+                if (!localisationManager)
+                    localisationManager = LocalisationManager.Instance;
+
+                return localisationManager;
+            }
+        }
+
         public Dictionary<string, string> dictionary;
 
         private void OnEnable()
         {
-            dictionary = LocalisationSystem.GetDictionary();
+            //TODO
+            //dictionary = LocalisationManager.GetDictionary();
         }
 
         public void OnGUI()
@@ -99,10 +126,11 @@ namespace CoreScript.Localisation
                     {
                         if (EditorUtility.DisplayDialog("Remove Key " + item.Key + "?", "This will remove the element from localisation,are you sure?", "do it"))
                         {
-                            LocalisationSystem.Remove(item.Key);
+                            LocalisationManager.Remove(item.Key);
                             AssetDatabase.Refresh();
-                            LocalisationSystem.RefreshData();
-                            dictionary = LocalisationSystem.GetDictionary();
+                            //TODO
+                            //LocalisationManager.RefreshData();
+                            //dictionary = LocalisationManager.GetDictionary();
                         }
                     }
 

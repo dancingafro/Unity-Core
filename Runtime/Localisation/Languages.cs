@@ -9,7 +9,19 @@ namespace CoreScript.Localisation
     {
         [SerializeField] string header = "";
         [SerializeField] bool defaultLanguage = false;
-        public string Header { get { return header; } }
-        public bool DefaultLanguage { get { return defaultLanguage; } }
+        public string Header
+        {
+            get { return header; }
+#if UNITY_EDITOR
+            set { header = value; }
+#endif
+        }
+        public bool DefaultLanguage
+        {
+            get { return defaultLanguage; }
+#if UNITY_EDITOR
+            set { defaultLanguage = value; }
+#endif
+        }
     }
 }

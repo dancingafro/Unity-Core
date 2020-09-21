@@ -10,25 +10,12 @@ namespace CoreScript.Localisation
 {
     public class CSVLoader
     {
-        LocalisationInfo localisationInfo;
-
         TextAsset csvFile;
 
-        TextAsset CSVFile
-        {
-            get
-            {
-                if (csvFile == null)
-                    LoadCSV(localisationInfo.FilePath);
+        const char surround = '"';
+        readonly string[] fieldSeperator = { "\",\"" };
 
-                return csvFile;
-            }
-        }
-
-        char surround = '"';
-        string[] fieldSeperator = { "\",\"" };
-
-        string[] Lines { get { return CSVFile.text.Split('\n'); } }
+        string[] Lines { get { return csvFile.text.Split('\n'); } }
         string[] Headers { get { return TrimAndSplit(Lines[0]); } }
         string[] Keys
         {
@@ -43,10 +30,9 @@ namespace CoreScript.Localisation
             }
         }
 
-        public CSVLoader(LocalisationInfo localisationInfo)
+        public CSVLoader(string path)
         {
-            this.localisationInfo = localisationInfo;
-            LoadCSV(localisationInfo.FilePath);
+            LoadCSV(path);
         }
 
         public void LoadCSV(string filePath)
@@ -125,7 +111,7 @@ namespace CoreScript.Localisation
         public void Add(string key, string value, string header)
         {
             string append = string.Format("\n\"{0}\",{1}", key, AppendToCSV(value, header));
-            File.AppendAllText(localisationInfo.CSVFullFilePath, append);
+            //File.AppendAllText(localisationInfo.CSVFullFilePath, append);
 
             UnityEditor.AssetDatabase.Refresh();
         }
@@ -161,7 +147,7 @@ namespace CoreScript.Localisation
 
             string[] newLines = lines.Where(i => i != lines[lineIndexToRemove]).ToArray();
 
-            File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", newLines));
+            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", newLines));
 
             UnityEditor.AssetDatabase.Refresh();
         }
@@ -193,7 +179,7 @@ namespace CoreScript.Localisation
             fields[fieldsIndex] = value;
             lines[lineIndexToEdit] = JoinFields(fields);
 
-            File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", lines));
+            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", lines));
 
             UnityEditor.AssetDatabase.Refresh();
         }

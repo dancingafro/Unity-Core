@@ -11,6 +11,19 @@ namespace CoreScript.Localisation
         bool dropdown = false;
         float height = 0;
 
+        LocalisationManager localisationManager;
+
+        LocalisationManager LocalisationManager
+        {
+            get
+            {
+                if (!localisationManager)
+                    localisationManager = LocalisationManager.Instance;
+
+                return localisationManager;
+            }
+        }
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return dropdown ? height + 25 : 20;
@@ -61,7 +74,7 @@ namespace CoreScript.Localisation
 
             if (dropdown)
             {
-                var value = LocalisationSystem.GetLocalisedValue(key.stringValue);
+                var value = LocalisationManager.GetLocalisedValue(key.stringValue);
                 GUIStyle style = GUI.skin.box;
                 height = style.CalcHeight(new GUIContent(value), valueRect.width);
 
