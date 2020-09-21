@@ -14,13 +14,7 @@ namespace CoreScript.Localisation
             this.key = key;
         }
 
-        public string Value
-        {
-            get
-            {
-                return LocalisationSystem.GetLocalisedValue(key);
-            }
-        }
+        public string Value { get { return LocalisationSystem.GetLocalisedValue(key); } }
 
         public static implicit operator LocalisedString(string key)
         {

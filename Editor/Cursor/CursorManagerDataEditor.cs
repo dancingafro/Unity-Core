@@ -127,7 +127,7 @@ namespace CoreScript.Cursors
             if (!addNew)
             {
                 GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
-                cursorType = (CursorType)EditorGUILayout.ObjectField("Cursor Animation Data :", cursorType, typeof(CursorType));
+                cursorType = (CursorType)EditorGUILayout.ObjectField("Cursor Animation Data :", cursorType, typeof(CursorType), false);
                 if (cursorType != null)
                 {
                     CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));

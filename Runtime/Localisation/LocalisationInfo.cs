@@ -16,14 +16,8 @@ namespace CoreScript.Localisation
         const string exampleLanguage = "CoreScript/Localisation/Languages";
         const string exampleFile = "CoreScript/Localisation/Example";
 
-        public string FilePath
-        {
-            get
-            {
-                return (filePath == "") ? exampleFile : filePath;
-            }
-        }
-
+        public string FilePath { get { return (filePath == "") ? exampleFile : filePath; } }
+        public string LanguagePath { get { return (languagePath == "") ? exampleLanguage : languagePath; } }
         public Languages CurrentLanguage { get; private set; } = null;
 
         public Languages[] Languages
@@ -56,14 +50,14 @@ namespace CoreScript.Localisation
         {
             get
             {
-                string CSVFullFilePath = "Assets/com.desmond.corescript/Resources/" + FilePath + ".csv";
+                string CSVFullFilePath = "Packages/Unity Core/Resources/" + FilePath + ".csv";
 
                 if (!File.Exists(CSVFullFilePath))
                 {
                     string[] paths = Directory.GetDirectories("Library/PackageCache/");
                     foreach (var path in paths)
                     {
-                        if (!path.Contains("com.desmond.corescript"))
+                        if (!path.Contains("Unity Core"))
                             continue;
                         CSVFullFilePath = path + "/Resources/" + FilePath + ".csv";
                         break;
@@ -73,18 +67,6 @@ namespace CoreScript.Localisation
                 return CSVFullFilePath;
             }
         }
-
-        public string LanguagePath
-        {
-            get
-            {
-                if (languagePath == "")
-                    return exampleLanguage;
-
-                return languagePath;
-            }
-        }
-
 #endif
     }
 }
