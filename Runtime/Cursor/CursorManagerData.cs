@@ -54,14 +54,16 @@ namespace CoreScript.Cursors
 
         public static CursorManagerData Load()
         {
-            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>("CoreScript/Cursor/CursorManagerData");
+            string path = "CoreScript/Cursor";
+            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>(path + "/CursorManagerData");
             if (cursorManagerData != null)
                 return cursorManagerData;
 #if UNITY_EDITOR
-            cursorManagerData = ScriptableObject.CreateInstance<CursorManagerData>();
-            if (!UnityEditor.AssetDatabase.IsValidFolder("Assets/Resources/CoreScript/Cursor"))
+            string additionalPath = "Assets/Resources/" + path;
+            cursorManagerData = CreateInstance<CursorManagerData>();
+            if (!UnityEditor.AssetDatabase.IsValidFolder(additionalPath))
             {
-                string[] paths = "Assets/Resources/CoreScript/Cursor".Split('/');
+                string[] paths = additionalPath.Split('/');
                 for (int i = 1; i < paths.Length; i++)
                 {
                     if (UnityEditor.AssetDatabase.IsValidFolder(paths[i]))
@@ -70,7 +72,7 @@ namespace CoreScript.Cursors
                     UnityEditor.AssetDatabase.CreateFolder(paths[i - 1], paths[i]);
                 }
             }
-            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/Resources/CoreScript/Cursor/CursorManagerData.asset");
+            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, additionalPath + "/CursorManagerData.asset");
             UnityEditor.AssetDatabase.SaveAssets();
             UnityEditor.AssetDatabase.Refresh();
             Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");
@@ -81,7 +83,6 @@ namespace CoreScript.Cursors
         }
 
 #if UNITY_EDITOR
-
         public void AddNewCursorAnimation(CursorAnimationData cursorAnimationData)
         {
             CursorAnimationData[] temp = cursorAnimations;
