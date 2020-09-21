@@ -1,6 +1,6 @@
 {
   "name": "com.desmond.corescript",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "displayName": "Unity Core",
   "description": "Core Script included:\n\tUI\n\tUI Animation\n\t\n\tUtilities",
   "keywords": [
@@ -16,6 +16,6 @@
   "hideInEditor": false,
   "type": "tool",
   "dependencies": {
-    "com.unity.textmeshpro": ""
+    "com.unity.textmeshpro": "2.0.1"
   }
 }

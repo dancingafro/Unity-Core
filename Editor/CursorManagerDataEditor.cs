@@ -9,8 +9,8 @@ namespace CoreScript.Cursors
     {
         public CursorManagerData CursorManagerData { private get; set; }
         public string cursorTypeName = "";
-        Rect animationPreviewRect;
-        public float timer = 0;
+        public double timer = 0;
+        CursorType cursorType;
         [MenuItem("Custom Editor/Cursor Manager Editor")]
         static void Init()
         {
@@ -19,7 +19,7 @@ namespace CoreScript.Cursors
         float editorDeltaTime = 0f;
         float lastTimeSinceStartup = 0f;
 
-        void Update()
+        protected override void Update()
         {
             SetEditorDeltaTime();
 
@@ -32,7 +32,6 @@ namespace CoreScript.Cursors
                     timer += CursorManagerData.CurrentCursorAnimation.FrameRate;
                 }
             }
-
         }
 
         private void SetEditorDeltaTime()
@@ -48,7 +47,7 @@ namespace CoreScript.Cursors
         public static void Open(CursorManagerData cursorManagerData)
         {
             // Get existing open window or if none, make a new one:
-            CursorManagerDataEditor window = (CursorManagerDataEditor)EditorWindow.GetWindow(typeof(CursorManagerDataEditor));
+            CursorManagerDataEditor window = (CursorManagerDataEditor)GetWindow(typeof(CursorManagerDataEditor));
             window.CursorManagerData = cursorManagerData;
             window.serializedObject = new SerializedObject(cursorManagerData);
 
@@ -87,10 +86,8 @@ namespace CoreScript.Cursors
             else
                 EditorGUILayout.LabelField("Select an item");
 
-            animationPreviewRect = new Rect(position.width - 62, position.height - 62, 50, 50);
             if (CursorManagerData.CurrentCursorAnimation != null && CursorManagerData.CurrentCursorAnimation.CurrentFrame != null)
-                GUI.DrawTexture(animationPreviewRect, CursorManagerData.CurrentCursorAnimation.CurrentFrame);
-
+                GUILayout.Box(CursorManagerData.CurrentCursorAnimation.CurrentFrame);
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
@@ -98,7 +95,7 @@ namespace CoreScript.Cursors
             Apply();
         }
 
-        static readonly string ExamplePath = "CoreScript/Cursor";
+        bool addNew = false;
         protected override void DrawSidebar(SerializedProperty prop)
         {
             int i = 0;
@@ -126,28 +123,64 @@ namespace CoreScript.Cursors
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
-            GUILayout.Label("Cursor Type :");
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
-            cursorTypeName = GUILayout.TextArea(cursorTypeName);
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical("box", GUILayout.MinWidth(25), GUILayout.ExpandHeight(true));
 
-            if (GUILayout.Button("+"))
+            if (!addNew)
             {
-                if (cursorTypeName != "")
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
+                cursorType = (CursorType)EditorGUILayout.ObjectField("Cursor Animation Data :", cursorType, typeof(CursorType));
+                if (cursorType != null)
                 {
-                    string path = ExamplePath + "/Cursor Type/" + cursorTypeName;
-                    CursorType cursorType = ScriptableObject.CreateInstance<CursorType>();
-                    UnityEditor.AssetDatabase.CreateAsset(cursorType, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
-                    UnityEditor.AssetDatabase.SaveAssets();
+                    CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));
+                    cursorType = null;
+                    needsRepaint = true;
+                }
+
+                GUILayout.EndVertical();
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
+                if (GUILayout.Button("Add new"))
+                    addNew = !addNew;
+                GUILayout.EndVertical();
+            }
+            else
+            {
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
+                GUILayout.Label("Cursor Type :");
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
+                cursorTypeName = GUILayout.TextArea(cursorTypeName);
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(25), GUILayout.ExpandHeight(true));
+                if (GUILayout.Button("+") && cursorTypeName != "")
+                {
+                    CursorType cursorType = CreateInstance<CursorType>();
+
+                    if (!AssetDatabase.IsValidFolder("Assets/Resources/CoreScript/Cursor/Cursor Type"))
+                    {
+                        string[] paths = "Assets/Resources/CoreScript/Cursor/Cursor Type".Split('/');
+                        for (int z = 1; z < paths.Length; z++)
+                        {
+                            if (AssetDatabase.IsValidFolder(paths[z]))
+                                continue;
+
+                            AssetDatabase.CreateFolder(paths[z - 1], paths[z]);
+                        }
+                    }
+
+                    AssetDatabase.CreateAsset(cursorType, "Assets/Resources/CoreScript/Cursor/Cursor Type/" + cursorTypeName + ".asset");
+                    AssetDatabase.SaveAssets();
                     CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));
                     needsRepaint = true;
                 }
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
+                if (GUILayout.Button("Cancle"))
+                    addNew = !addNew;
+                GUILayout.EndVertical();
             }
 
-            GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
             if (!string.IsNullOrEmpty(selectedPropertyPath))

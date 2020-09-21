@@ -22,6 +22,11 @@ public class ExtendedEditorWindow : EditorWindow
         }
     }
 
+    protected virtual void Update()
+    {
+        
+    }
+
     protected virtual void DrawSidebar(SerializedProperty prop)
     {
         foreach (SerializedProperty item in prop)

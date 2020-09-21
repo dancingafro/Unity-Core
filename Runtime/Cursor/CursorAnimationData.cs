@@ -7,7 +7,7 @@ namespace CoreScript.Cursors
     [System.Serializable]
     public class CursorAnimationData
     {
-        public string name
+        public string Name
         {
             get
             {

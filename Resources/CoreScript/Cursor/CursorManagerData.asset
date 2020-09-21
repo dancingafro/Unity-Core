@@ -15,8 +15,8 @@ MonoBehaviour:
   cursorAnimations:
   - cursorType: {fileID: 11400000, guid: a8cc0fecf0adb614290f7ca1e3e6fb8c, type: 2}
     listOfCursorTexture:
-    - {fileID: 2800000, guid: 7b9c71838ce406c4a93e8adabc4a677f, type: 3}
-    frameRate: 0.1
+    - {fileID: 2800000, guid: d1beeda6dc763284997c3e5dc607d723, type: 3}
+    frameRate: 0
     hotSpot: {x: 7, y: 7}
   - cursorType: {fileID: 11400000, guid: 228abea2deda7d84c93d4a8cddab201e, type: 2}
     listOfCursorTexture:
@@ -24,6 +24,18 @@ MonoBehaviour:
     - {fileID: 2800000, guid: e17a2541eb3514348a26e7d3f2c9e072, type: 3}
     - {fileID: 2800000, guid: df183bb6eb503e648bb625eb9359103e, type: 3}
     - {fileID: 2800000, guid: 8d6a0edeba04dc740a6069123f3b8918, type: 3}
+    frameRate: 0.2
+    hotSpot: {x: 7, y: 7}
+  - cursorType: {fileID: 11400000, guid: 3d59f99e311db804d847c7bf51d3977a, type: 2}
+    listOfCursorTexture:
+    - {fileID: 2800000, guid: 299df2d9c9b166e4f8d9f1296b505a74, type: 3}
+    - {fileID: 2800000, guid: 56b20258db9ab0947a77f3089fefb404, type: 3}
+    - {fileID: 2800000, guid: adb4e54461b722244ae30b4cbf8683ac, type: 3}
+    frameRate: 0.2
+    hotSpot: {x: 7, y: 7}
+  - cursorType: {fileID: 11400000, guid: f01c22dd77f67934da20121eea0c069e, type: 2}
+    listOfCursorTexture:
+    - {fileID: 2800000, guid: adb4e54461b722244ae30b4cbf8683ac, type: 3}
     frameRate: 0.1
     hotSpot: {x: 7, y: 7}
   defaultCursorType: {fileID: 11400000, guid: a8cc0fecf0adb614290f7ca1e3e6fb8c, type: 2}

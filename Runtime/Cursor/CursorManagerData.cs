@@ -11,7 +11,6 @@ namespace CoreScript.Cursors
         public CursorType defaultCursorType;
         public CursorType CurrentCursorType { get; private set; }
 
-        const string ExamplePath = "CoreScript/Cursor";
         public CursorAnimationData CurrentCursorAnimation
         {
             get
@@ -24,7 +23,7 @@ namespace CoreScript.Cursors
                 return null;
             }
         }
-        
+
         public void SetDefaultCursorAnimation()
         {
             SetActiveCursorAnimation(defaultCursorType);
@@ -55,16 +54,25 @@ namespace CoreScript.Cursors
 
         public static CursorManagerData Load()
         {
-            string path = ExamplePath + "/CursorManagerData";
-            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>(path);
+            CursorManagerData cursorManagerData = Resources.Load<CursorManagerData>("CoreScript/Cursor/CursorManagerData");
             if (cursorManagerData != null)
                 return cursorManagerData;
-
 #if UNITY_EDITOR
             cursorManagerData = ScriptableObject.CreateInstance<CursorManagerData>();
-            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/com.desmond.corescript/Core/Resources/" + path + ".asset");
-            UnityEditor.AssetDatabase.SaveAssets();
+            if (!UnityEditor.AssetDatabase.IsValidFolder("Assets/Resources/CoreScript/Cursor"))
+            {
+                string[] paths = "Assets/Resources/CoreScript/Cursor".Split('/');
+                for (int i = 1; i < paths.Length; i++)
+                {
+                    if (UnityEditor.AssetDatabase.IsValidFolder(paths[i]))
+                        continue;
 
+                    UnityEditor.AssetDatabase.CreateFolder(paths[i - 1], paths[i]);
+                }
+            }
+            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/Resources/CoreScript/Cursor/CursorManagerData.asset");
+            UnityEditor.AssetDatabase.SaveAssets();
+            UnityEditor.AssetDatabase.Refresh();
             Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");
             return cursorManagerData;
 #else
