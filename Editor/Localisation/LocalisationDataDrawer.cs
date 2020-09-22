@@ -4,31 +4,32 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
 
-namespace CoreScript.Cursors
+namespace CoreScript.Localisation
 {
     public class AssetHandler
     {
         [OnOpenAsset()]
         public static bool OpenEditor(int instanceId, int line)
         {
-            CursorManagerData obj = EditorUtility.InstanceIDToObject(instanceId) as CursorManagerData;
+            LocalisationData obj = EditorUtility.InstanceIDToObject(instanceId) as LocalisationData;
             if (obj == null)
                 return false;
 
-            CursorManagerDataEditor.Open(obj);
+            LocalisationDataEditor.Open(obj);
             return true;
         }
 
     }
 
 
-    [CustomEditor(typeof(CursorManagerData))]
-    public class CursorManagerDataDrawer : Editor
+    [CustomEditor(typeof(LocalisationData))]
+    public class LocalisationDataDrawer : Editor
     {
         public override void OnInspectorGUI()
         {
+            DrawPropertiesExcluding(serializedObject, "languages", "CSVFiles", "csvDatas");
             if (GUILayout.Button("Open Editor Window"))
-                CursorManagerDataEditor.Open((CursorManagerData)target);
+                LocalisationDataEditor.Open((LocalisationData)target);
         }
     }
 }

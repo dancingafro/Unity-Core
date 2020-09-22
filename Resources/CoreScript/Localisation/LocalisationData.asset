@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8d8f482a4f7703429aaf86cd571e8dd, type: 3}
+  m_Name: LocalisationData
+  m_EditorClassIdentifier: 
+  languages:
+  - {fileID: 11400000, guid: e76f09d749e3a9d41afe7212e6ea4387, type: 2}
+  - {fileID: 11400000, guid: 2c7416aaa4c67564baa0498b7c4d3584, type: 2}
+  - {fileID: 11400000, guid: 172cae4244fcd714aba4bc6c4bf27928, type: 2}
+  CSVFiles:
+  - {fileID: 4900000, guid: c2f589dfd8092b64eb163f62418ebe82, type: 3}
+  - {fileID: 4900000, guid: 2ca9fbdbc0e25914789492c330c470ea, type: 3}
+  - {fileID: 4900000, guid: 2a398898113fa1e41a11dfebf57fcb40, type: 3}
+  csvPath: CoreScript/Localisation/Example
+  languagePath: CoreScript/Localisation/Languages

@@ -21,16 +21,16 @@ namespace CoreScript.Localisation
 
         public string key, value;
 
-        LocalisationManager localisationManager;
+        LocalisationData localisationData;
 
-        LocalisationManager LocalisationManager
+        LocalisationData LocalisationData
         {
             get
             {
-                if (!localisationManager)
-                    localisationManager = LocalisationManager.Instance;
+                if (!localisationData)
+                    localisationData = LocalisationData.Load();
 
-                return localisationManager;
+                return localisationData;
             }
         }
 
@@ -46,10 +46,10 @@ namespace CoreScript.Localisation
 
             if (GUILayout.Button("Add"))
             {
-                if (LocalisationManager.GetLocalisedValue(key) != string.Empty)
-                    LocalisationManager.Replace(key, value);
+                if (LocalisationData.GetLocalisedValue(key) != string.Empty)
+                    LocalisationData.Replace(key, value);
                 else
-                    LocalisationManager.Add(key, value);
+                    LocalisationData.Add(key, value);
             }
             maxSize = minSize = new Vector2(460, 250);
         }
@@ -73,16 +73,16 @@ namespace CoreScript.Localisation
 
         public string value = "";
         public Vector2 scroll;
-        LocalisationManager localisationManager;
+        LocalisationData localisationData;
 
-        LocalisationManager LocalisationManager
+        LocalisationData LocalisationData
         {
             get
             {
-                if (!localisationManager)
-                    localisationManager = LocalisationManager.Instance;
+                if (!localisationData)
+                    localisationData = LocalisationData.Load();
 
-                return localisationManager;
+                return localisationData;
             }
         }
 
@@ -90,8 +90,7 @@ namespace CoreScript.Localisation
 
         private void OnEnable()
         {
-            //TODO
-            //dictionary = LocalisationManager.GetDictionary();
+            dictionary = LocalisationData.GetDictionary();
         }
 
         public void OnGUI()
@@ -126,11 +125,10 @@ namespace CoreScript.Localisation
                     {
                         if (EditorUtility.DisplayDialog("Remove Key " + item.Key + "?", "This will remove the element from localisation,are you sure?", "do it"))
                         {
-                            LocalisationManager.Remove(item.Key);
+                            LocalisationData.Remove(item.Key);
                             AssetDatabase.Refresh();
-                            //TODO
-                            //LocalisationManager.RefreshData();
-                            //dictionary = LocalisationManager.GetDictionary();
+                            LocalisationData.LoadLocalisation();
+                            dictionary = LocalisationData.GetDictionary();
                         }
                     }
 

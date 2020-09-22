@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace CoreScript.Cursors
@@ -59,20 +60,13 @@ namespace CoreScript.Cursors
             if (cursorManagerData != null)
                 return cursorManagerData;
 #if UNITY_EDITOR
-            string additionalPath = "Assets/Resources/" + path;
+            string additionalPath = Application.dataPath + "/Resources/" + path;
             cursorManagerData = CreateInstance<CursorManagerData>();
-            if (!UnityEditor.AssetDatabase.IsValidFolder(additionalPath))
-            {
-                string[] paths = additionalPath.Split('/');
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    if (UnityEditor.AssetDatabase.IsValidFolder(paths[i]))
-                        continue;
 
-                    UnityEditor.AssetDatabase.CreateFolder(paths[i - 1], paths[i]);
-                }
-            }
-            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, additionalPath + "/CursorManagerData.asset");
+            if (!Directory.Exists(additionalPath))
+                Directory.CreateDirectory(additionalPath);
+
+            UnityEditor.AssetDatabase.CreateAsset(cursorManagerData, "Assets/Resources/" + path + "/CursorManagerData.asset");
             UnityEditor.AssetDatabase.SaveAssets();
             UnityEditor.AssetDatabase.Refresh();
             Debug.LogWarning("Could not find CursorManagerData asset. Will use default settings instead.");

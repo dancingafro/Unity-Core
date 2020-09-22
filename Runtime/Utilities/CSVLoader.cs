@@ -8,74 +8,64 @@ using UnityEngine;
 
 namespace CoreScript.Localisation
 {
-    public class CSVLoader
+    public struct CSVData
     {
-        TextAsset csvFile;
+        public string[] headers;
+        public Dictionary<string, string> data;
+    }
 
+    public static class CSVLoader
+    {
         const char surround = '"';
-        readonly string[] fieldSeperator = { "\",\"" };
+        static readonly string[] fieldSeperator = { "\",\"" };
 
-        string[] Lines { get { return csvFile.text.Split('\n'); } }
-        string[] Headers { get { return TrimAndSplit(Lines[0]); } }
-        string[] Keys
+        //string[] Lines { get { return csvFile.text.Split('\n'); } }
+        //string[] Headers { get { return TrimAndSplit(Lines[0]); } }
+        //string[] Keys
+        //{
+        //    get
+        //    {
+        //        string[] lines = Lines, keys = new string[lines.Length];
+
+        //        for (int i = 0; i < keys.Length; ++i)
+        //            keys[i] = lines[i].Split(fieldSeperator, StringSplitOptions.None)[0];
+
+        //        return keys;
+        //    }
+        //}
+        public static CSVData LoadCSV(TextAsset csv)
         {
-            get
-            {
-                string[] lines = Lines, keys = new string[lines.Length];
+            string[] lines = csv.text.Split('\n'), headers = TrimAndSplit(lines[0]), keys = new string[lines.Length - 1];
 
-                for (int i = 0; i < keys.Length; ++i)
-                    keys[i] = lines[i].Split(fieldSeperator, StringSplitOptions.None)[0];
+            for (int i = 0; i < keys.Length; ++i)
+                keys[i] = lines[i + 1].Split(fieldSeperator, StringSplitOptions.None)[0];
 
-                return keys;
-            }
-        }
-
-        public CSVLoader(string path)
-        {
-            LoadCSV(path);
-        }
-
-        public void LoadCSV(string filePath)
-        {
-            csvFile = Resources.Load<TextAsset>(filePath);
-        }
-
-        public Dictionary<string, Dictionary<string, string>> GetDictionary()
-        {
-            Dictionary<string, Dictionary<string, string>> dictionary = new Dictionary<string, Dictionary<string, string>>();
-
-            string[] lines = Lines, keys = Keys, headers = Headers;
-
-            for (int i = 1; i < headers.Length; ++i)
-                dictionary.Add(headers[i], new Dictionary<string, string>());
-
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
             for (int i = 1; i < lines.Length; ++i)
             {
                 string[] fields = TrimAndSplit(lines[i]);
 
-                if (fields.Length < dictionary.Count || dictionary.ContainsKey(fields[0]))
+                if (dictionary.ContainsKey(fields[0]))
                     continue;
 
-                int index = 1;
-                foreach (var Key in dictionary.Keys)
-                {
-                    dictionary[Key].Add(fields[0], fields[index]);
-                    ++index;
-                }
-
+                dictionary.Add(fields[0], fields[1]);
             }
 
-            return dictionary;
+            return new CSVData()
+            {
+                headers = headers,
+                data = dictionary
+            };
         }
 
-        string[] SeperateFields(string line)
+        static string[] SeperateFields(string line)
         {
             Regex CSVParser = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
 
             return CSVParser.Split(line);
         }
 
-        string[] TrimAndSplit(string line)
+        static string[] TrimAndSplit(string line)
         {
             string[] fields = SeperateFields(line);
 
@@ -88,101 +78,83 @@ namespace CoreScript.Localisation
             return fields;
         }
 
-        string JoinFields(string[] fields)
+        static string JoinFields(string[] fields)
         {
             return surround + string.Join(fieldSeperator[0], fields) + surround;
         }
 
-        int IndexOfHeader(string header)
-        {
-            string[] headers = Headers;
-            for (int i = 1; i < headers.Length; i++)
-            {
-                if (headers[i] != header)
-                    continue;
+        //#if UNITY_EDITOR
+        //        public static void Add(string key, string value, string header)
+        //        {
+        //            string append = string.Format("\n\"{0}\",{1}", key, AppendToCSV(value, header));
+        //            //File.AppendAllText(localisationInfo.CSVFullFilePath, append);
 
-                return i;
-            }
+        //            UnityEditor.AssetDatabase.Refresh();
+        //        }
 
-            return 0;
-        }
+        //        static string AppendToCSV(string value, string header)
+        //        {
+        //            string line = "";
+        //            string[] headers = Headers;
 
-#if UNITY_EDITOR
-        public void Add(string key, string value, string header)
-        {
-            string append = string.Format("\n\"{0}\",{1}", key, AppendToCSV(value, header));
-            //File.AppendAllText(localisationInfo.CSVFullFilePath, append);
+        //            for (int i = 1; i < headers.Length; ++i)
+        //                line += (line != "" ? "," : "") + "\"" + (headers[i] == header ? value : "") + "\"";
 
-            UnityEditor.AssetDatabase.Refresh();
-        }
+        //            return line;
+        //        }
 
-        string AppendToCSV(string value, string header)
-        {
-            string line = "";
-            string[] headers = Headers;
+        //        public static void Remove(string key)
+        //        {
+        //            string[] lines = Lines, keys = Keys;
 
-            for (int i = 1; i < headers.Length; ++i)
-                line += (line != "" ? "," : "") + "\"" + (headers[i] == header ? value : "") + "\"";
+        //            int lineIndexToRemove = -1;
 
-            return line;
-        }
+        //            for (int i = 0; i < keys.Length; ++i)
+        //            {
+        //                if (!keys[i].Contains(key))
+        //                    continue;
 
-        public void Remove(string key)
-        {
-            string[] lines = Lines, keys = Keys;
+        //                lineIndexToRemove = i;
+        //                break;
+        //            }
 
-            int lineIndexToRemove = -1;
+        //            if (lineIndexToRemove == -1)
+        //                return;
 
-            for (int i = 0; i < keys.Length; ++i)
-            {
-                if (!keys[i].Contains(key))
-                    continue;
+        //            string[] newLines = lines.Where(i => i != lines[lineIndexToRemove]).ToArray();
 
-                lineIndexToRemove = i;
-                break;
-            }
+        //            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", newLines));
 
-            if (lineIndexToRemove == -1)
-                return;
+        //            UnityEditor.AssetDatabase.Refresh();
+        //        }
 
-            string[] newLines = lines.Where(i => i != lines[lineIndexToRemove]).ToArray();
+        //        public static void Edit(string key, string value)
+        //        {
+        //            string[] lines = Lines, keys = Keys;
 
-            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", newLines));
+        //            int lineIndexToEdit = -1;
 
-            UnityEditor.AssetDatabase.Refresh();
-        }
+        //            for (int i = 0; i < keys.Length; ++i)
+        //            {
+        //                if (!keys[i].Contains(key))
+        //                    continue;
 
-        public void Edit(string key, string value, string header)
-        {
-            string[] lines = Lines, keys = Keys;
+        //                lineIndexToEdit = i;
+        //                break;
+        //            }
 
-            int fieldsIndex = IndexOfHeader(header);
-            if (fieldsIndex == 0)
-                return;
+        //            if (lineIndexToEdit == -1)
+        //                return;
 
-            int lineIndexToEdit = -1;
+        //            string[] fields = TrimAndSplit(lines[lineIndexToEdit]);
 
-            for (int i = 0; i < keys.Length; ++i)
-            {
-                if (!keys[i].Contains(key))
-                    continue;
+        //            fields[1] = value;
+        //            lines[lineIndexToEdit] = JoinFields(fields);
 
-                lineIndexToEdit = i;
-                break;
-            }
+        //            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", lines));
 
-            if (lineIndexToEdit == -1)
-                return;
-
-            string[] fields = TrimAndSplit(lines[lineIndexToEdit]);
-
-            fields[fieldsIndex] = value;
-            lines[lineIndexToEdit] = JoinFields(fields);
-
-            //File.WriteAllText(localisationInfo.CSVFullFilePath, string.Join("\n", lines));
-
-            UnityEditor.AssetDatabase.Refresh();
-        }
-#endif
+        //            UnityEditor.AssetDatabase.Refresh();
+        //        }
+        //#endif
     }
 }

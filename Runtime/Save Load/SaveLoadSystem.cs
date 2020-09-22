@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Audio;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -27,7 +26,11 @@ namespace CoreScript.SaveLoad
         {
             get
             {
-                string SaveFileDirectory = System.IO.Path.Combine(Application.persistentDataPath, "Save Files/");
+#if UNITY_EDITOR
+                string SaveFileDirectory = Path.Combine(Application.dataPath, "Resources/Save Files/");
+#else
+                string SaveFileDirectory = Path.Combine(Application.persistentDataPath, "Save Files/");
+#endif
                 if (!Directory.Exists(SaveFileDirectory))
                     Directory.CreateDirectory(SaveFileDirectory);
 
@@ -38,11 +41,11 @@ namespace CoreScript.SaveLoad
         {
             get
             {
-                string AutoSaveFileDirectory = System.IO.Path.Combine(SaveFileDirectory, "Auto Save/");
-                if (!Directory.Exists(AutoSaveFileDirectory))
-                    Directory.CreateDirectory(AutoSaveFileDirectory);
+                string autoSaveFileDirectory = Path.Combine(SaveFileDirectory, "Auto Save/");
+                if (!Directory.Exists(autoSaveFileDirectory))
+                    Directory.CreateDirectory(autoSaveFileDirectory);
 
-                return AutoSaveFileDirectory;
+                return autoSaveFileDirectory;
             }
         }
 

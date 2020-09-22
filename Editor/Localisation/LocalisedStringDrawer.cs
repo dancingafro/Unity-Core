@@ -11,16 +11,16 @@ namespace CoreScript.Localisation
         bool dropdown = false;
         float height = 0;
 
-        LocalisationManager localisationManager;
+        LocalisationData localisationData;
 
-        LocalisationManager LocalisationManager
+        LocalisationData LocalisationData
         {
             get
             {
-                if (!localisationManager)
-                    localisationManager = LocalisationManager.Instance;
+                if (!localisationData)
+                    localisationData = LocalisationData.Load();
 
-                return localisationManager;
+                return localisationData;
             }
         }
 
@@ -66,7 +66,6 @@ namespace CoreScript.Localisation
 
             position.x += position.width + 2;
 
-
             GUIContent storeContent = new GUIContent(Resources.Load<Texture>("CoreScript/Texture/store"));
 
             if (GUI.Button(position, storeContent))
@@ -74,7 +73,7 @@ namespace CoreScript.Localisation
 
             if (dropdown)
             {
-                var value = LocalisationManager.GetLocalisedValue(key.stringValue);
+                var value = LocalisationData.GetLocalisedValue(key.stringValue);
                 GUIStyle style = GUI.skin.box;
                 height = style.CalcHeight(new GUIContent(value), valueRect.width);
 
