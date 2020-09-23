@@ -1,8 +1,8 @@
 {
   "name": "com.desmond.corescript",
-  "version": "1.2.3",
+  "version": "1.3.1",
   "displayName": "Unity Core",
-  "description": "Core Script included:\n\tUI\n\tUI Animation\n\t\n\tUtilities",
+  "description": "Core Script included:\n\t2D Grid\n\t2D Radial Grid\n\tLocalisation\n\tSave and Load system\n\tUtilities\n\t\tUI\n\tUI Animation",
   "keywords": [
     "UI",
     "UIAnimation",
@@ -14,7 +14,7 @@
     "url": ""
   },
   "hideInEditor": false,
-  "type": "tool",
+  "type": "library",
   "dependencies": {
     "com.unity.textmeshpro": "2.0.1"
   }

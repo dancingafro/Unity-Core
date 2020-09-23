@@ -47,7 +47,7 @@ namespace CoreScript.Localisation
             if (GUILayout.Button("Add"))
             {
                 if (LocalisationData.GetLocalisedValue(key) != string.Empty)
-                    LocalisationData.Replace(key, value);
+                    LocalisationData.Edit(key, value);
                 else
                     LocalisationData.Add(key, value);
             }

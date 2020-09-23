@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 #if UNITY_EDITOR
 using System.IO;
 #endif
@@ -68,7 +69,6 @@ namespace CoreScript.Localisation
         {
             localisation = null;
             localisation = new Dictionary<string, Dictionary<string, string>>();
-            //TODO
             CSVFiles = Resources.LoadAll<TextAsset>(CSVPath);
 
             csvDatas = new CSVData[CSVFiles.Length];
@@ -127,91 +127,67 @@ namespace CoreScript.Localisation
             return Localisation[header];
         }
 
+        public Dictionary<string,Dictionary<string, string>> GetAllDictionary()
+        {
+            return Localisation;
+        }
+
 #if UNITY_EDITOR
-        public void Add(string key, string value)
+        public void Add(string key, string value, string header = "", bool reload = true)
         {
             if (value.Contains("\""))
                 value.Replace('"', '\"');
 
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Add(key, value, localisationInfo.CurrentLanguage.Header);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
+            if (string.IsNullOrEmpty(header))
+                header = CurrentLanguage.Header;
 
-            //UpdateDictionary();
-        }
-
-        public void Replace(string key, string value)
-        {
-            if (value.Contains("\""))
-                value.Replace('"', '\"');
-
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Edit(key, value, localisationInfo.CurrentLanguage.Header);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-
-            //UpdateDictionary();
-        }
-
-        public void Remove(string key)
-        {
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Remove(key);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-
-            //UpdateDictionary();
-        }
-
-        public void Add(string lang, string key, string value)
-        {
-            if (value.Contains("\""))
-                value.Replace('"', '\"');
-
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Add(key, value, localisationInfo.CurrentLanguage.Header);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-
-            //UpdateDictionary();
-        }
-
-        public void Replace(string lang, string key, string value)
-        {
-            if (value.Contains("\""))
-                value.Replace('"', '\"');
-
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Edit(key, value, localisationInfo.CurrentLanguage.Header);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-
-            //UpdateDictionary();
-        }
-
-        public void Remove(string lang, string key)
-        {
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-            //CSVLoader.Remove(key);
-            //CSVLoader.LoadCSV(LocalisationData.CSVPath);
-
-            //UpdateDictionary();
-        }
-
-        public string CSVFullFilePath
-        {
-            get
+            for (int i = 0; i < languages.Length; i++)
             {
-                string CSVFullFolderPath = "Assets/Resources/" + CSVPath + ".csv";
-                if (!File.Exists(CSVFullFolderPath))
-                {
-                    string[] paths = Directory.GetDirectories("Library/PackageCache/");
-                    foreach (var path in paths)
-                    {
-                        if (!path.Contains("Unity Core"))
-                            continue;
-                        CSVFullFolderPath = path + "/Resources/" + CSVPath + ".csv";
-                        break;
-                    }
-                }
-                return CSVFullFolderPath;
+                string temp = languages[i].Header == header ? value : "";
+                CSVLoader.Add(key, temp, CSVFiles[i]);
             }
+
+            if (reload)
+                LoadLocalisation();
+        }
+
+        public void Edit(string key, string value, string header = "", bool reload = true)
+        {
+            if (value.Contains("\""))
+                value.Replace('"', '\"');
+
+            if (string.IsNullOrEmpty(header))
+                header = CurrentLanguage.Header;
+
+            if (!GetIndexFromLanguages(header, out int index))
+                return;
+
+            CSVLoader.Edit(key, value, CSVFiles[index]);
+            if (reload)
+                LoadLocalisation();
+        }
+
+        public void Remove(string key, bool reload = true)
+        {
+            for (int i = 0; i < languages.Length; i++)
+                CSVLoader.Remove(key, CSVFiles[i]);
+
+            if (reload)
+                LoadLocalisation();
+        }
+
+        bool GetIndexFromLanguages(string header, out int index)
+        {
+            index = -1;
+            for (int i = 0; i < languages.Length; i++)
+            {
+                if (languages[i].Header != header)
+                    continue;
+
+                index = i;
+                return true;
+            }
+            return false;
         }
 #endif
 
