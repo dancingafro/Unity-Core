@@ -128,17 +128,24 @@ namespace CoreScript.Cursors
             {
                 GUILayout.BeginVertical("box", GUILayout.MinWidth(225), GUILayout.ExpandHeight(true));
                 cursorType = (CursorType)EditorGUILayout.ObjectField("Cursor Animation Data :", cursorType, typeof(CursorType), false);
-                if (cursorType != null)
-                {
-                    CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));
-                    cursorType = null;
-                    needsRepaint = true;
-                }
 
                 GUILayout.EndVertical();
                 GUILayout.BeginVertical("box", GUILayout.MinWidth(50), GUILayout.ExpandHeight(true));
                 if (GUILayout.Button("Add new"))
-                    addNew = !addNew;
+                {
+                    if (cursorType != null)
+                    {
+                        if (!CursorManagerData.Contain(cursorType))
+                            CursorManagerData.AddNewCursorAnimation(new CursorAnimationData(cursorType));
+                        else
+                            EditorUtility.DisplayDialog("Existing " + cursorType.name, "Current " + cursorType.name + " is exist in animation", "OK");
+
+                        cursorType = null;
+                        needsRepaint = true;
+                    }
+                    else
+                        addNew = !addNew;
+                }
                 GUILayout.EndVertical();
             }
             else

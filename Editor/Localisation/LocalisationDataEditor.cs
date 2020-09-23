@@ -196,12 +196,18 @@ namespace CoreScript.Localisation
                 GUILayout.BeginVertical(GUILayout.Width(netWidth));
                 if (GUILayout.Button("Add"))
                 {
-                    LocalisationData.Add(tempKey, tempValue);
-                    LocalisationData.LoadLocalisation();
-                    RefreshSelectedDictionary(selectedLanguge);
-                    tempKey = "";
-                    tempValue = "";
-                    addNew = !addNew;
+                    if (!selectedDictionary.ContainsKey(tempKey))
+                    {
+                        LocalisationData.Add(tempKey, tempValue);
+                        LocalisationData.LoadLocalisation();
+                        RefreshSelectedDictionary(selectedLanguge);
+                        tempKey = "";
+                        tempValue = "";
+                        addNew = !addNew;
+                    }
+                    else
+                        EditorUtility.DisplayDialog("Existing " + tempKey, "Current " + tempKey + " is exist in Localisation", "OK");
+
                 }
                 GUILayout.EndVertical();
                 GUILayout.Space(10);

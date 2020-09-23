@@ -88,6 +88,15 @@ namespace CoreScript.Cursors
             cursorAnimations[cursorAnimations.Length - 1] = cursorAnimationData;
         }
 
+        public bool Contain(CursorType cursorType)
+        {
+            foreach (var item in cursorAnimations)
+            {
+                if (item.CursorType == cursorType)
+                    return true;
+            }
+            return false;
+        }
         public void RemoveAt(int index)
         {
             CursorAnimationData[] temp = cursorAnimations;
