@@ -21,6 +21,18 @@ namespace CoreScript.Cursors
         float timer = 0f;
         CursorAnimationData currentCursorAnimation = null;
 
+        public CursorAnimationData CurrentCursorAnimation
+        {
+            get
+            {
+                if (currentCursorAnimation == null)
+                    currentCursorAnimation = CursorManagerData.CurrentCursorAnimation;
+
+                return currentCursorAnimation;
+            }
+            set { currentCursorAnimation = value; }
+        }
+
         // Update is called once per frame
         void Update()
         {
@@ -29,15 +41,15 @@ namespace CoreScript.Cursors
             if (timer > 0f)
                 return;
 
-            timer += currentCursorAnimation.FrameRate;
-            Cursor.SetCursor(currentCursorAnimation.GetNextFrame(), currentCursorAnimation.HotSpot, CursorMode.Auto);
+            timer += CurrentCursorAnimation.FrameRate;
+            Cursor.SetCursor(CurrentCursorAnimation.GetNextFrame(), CurrentCursorAnimation.HotSpot, CursorMode.Auto);
 
         }
 
         public void SetActiveCursorAnimation(CursorType cursorType)
         {
             CursorManagerData.SetActiveCursorAnimation(cursorType);
-            currentCursorAnimation = CursorManagerData.CurrentCursorAnimation;
+            CurrentCursorAnimation = CursorManagerData.CurrentCursorAnimation;
             timer = CursorManagerData.CurrentCursorAnimation.FrameRate;
             Cursor.SetCursor(CursorManagerData.CurrentCursorAnimation[0], CursorManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
         }
