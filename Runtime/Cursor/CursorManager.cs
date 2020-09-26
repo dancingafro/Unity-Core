@@ -21,6 +21,8 @@ namespace CoreScript.Cursors
         float timer = 0f;
         CursorAnimationData currentCursorAnimation = null;
 
+        bool onUI = false;
+
         public CursorAnimationData CurrentCursorAnimation
         {
             get
@@ -46,17 +48,20 @@ namespace CoreScript.Cursors
 
         }
 
-        public void SetActiveCursorAnimation(CursorType cursorType)
+        public void SetActiveCursorAnimation(CursorType cursorType, bool isUI = false)
         {
+            if (onUI && !isUI)
+                return;
+
             CursorManagerData.SetActiveCursorAnimation(cursorType);
             CurrentCursorAnimation = CursorManagerData.CurrentCursorAnimation;
             timer = CursorManagerData.CurrentCursorAnimation.FrameRate;
             Cursor.SetCursor(CursorManagerData.CurrentCursorAnimation[0], CursorManagerData.CurrentCursorAnimation.HotSpot, CursorMode.Auto);
         }
 
-        public void SetDefaultCursorAnimation()
+        public void SetDefaultCursorAnimation(bool isUI = false)
         {
-            SetActiveCursorAnimation(CursorManagerData.defaultCursorType);
+            SetActiveCursorAnimation(CursorManagerData.defaultCursorType, isUI);
         }
     }
 }

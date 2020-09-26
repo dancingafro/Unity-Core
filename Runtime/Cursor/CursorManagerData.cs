@@ -10,18 +10,32 @@ namespace CoreScript.Cursors
     {
         public CursorAnimationData[] cursorAnimations = new CursorAnimationData[1];
         public CursorType defaultCursorType;
-        public CursorType CurrentCursorType { get; private set; }
+        CursorType currentCursorType;
+        public CursorType CurrentCursorType
+        {
+            get
+            {
+                if (!currentCursorType)
+                    currentCursorType = defaultCursorType;
+
+                return currentCursorType;
+            }
+            private set { currentCursorType = value; }
+        }
 
         public CursorAnimationData CurrentCursorAnimation
         {
             get
             {
+                CursorAnimationData temp = null;
                 foreach (var item in cursorAnimations)
                 {
                     if (item.CursorType == CurrentCursorType)
                         return item;
+                    else if (item.CursorType == defaultCursorType)
+                        temp = item;
                 }
-                return null;
+                return temp;
             }
         }
 
