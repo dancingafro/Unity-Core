@@ -27,6 +27,17 @@ namespace CoreScript.Utility
             }
         }
 
+        public static void CombineList<T>(ref List<T> existingList, List<T> newList)
+        {
+            foreach (var item in newList)
+            {
+                if (existingList.Contains(item))
+                    continue;
+
+                existingList.Add(item);
+            }
+        }
+
         public static Vector3 MousePosition(Camera camera)
         {
             return new Vector3(Input.mousePosition.x, Input.mousePosition.y, camera.transform.position.z);
