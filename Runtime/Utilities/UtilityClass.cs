@@ -38,6 +38,20 @@ namespace CoreScript.Utility
             }
         }
 
+        public static List<T> CombineList<T>(List<T> existingList, List<T> newList)
+        {
+            List<T> list = new List<T>(existingList);
+            foreach (var item in newList)
+            {
+                if (list.Contains(item))
+                    continue;
+
+                list.Add(item);
+            }
+
+            return list;
+        }
+
         public static Vector3 MousePosition(Camera camera)
         {
             return new Vector3(Input.mousePosition.x, Input.mousePosition.y, camera.transform.position.z);

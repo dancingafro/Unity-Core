@@ -1,6 +1,6 @@
 {
   "name": "com.desmond.corescript",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "displayName": "Unity Core",
   "description": "Core Script included:\n\t2D Grid\n\t2D Radial Grid\n\tLocalisation\n\tSave and Load system\n\tUtilities\n\t\tUI\n\tUI Animation",
   "keywords": [
