@@ -9,11 +9,14 @@ namespace CoreScript.AStar
     public class PathRequestManager : MonoBehaviour
     {
         Queue<PathResult> results = new Queue<PathResult>();
+        Queue<PathRequest> requests = new Queue<PathRequest>();
         static PathRequestManager instance;
         PathFinding pathFinding;
 
         private void Awake()
         {
+            Thread thread = new Thread(ProcessRequest);
+            thread.Start();
             instance = this;
             pathFinding = GetComponent<PathFinding>();
         }
@@ -37,14 +40,32 @@ namespace CoreScript.AStar
 
         public static void RequestPath(PathRequest request)
         {
-            ThreadStart threadStart = delegate
-            {
-                instance.pathFinding.FindPath(request, instance.FinishedProcessingPath);
-            };
+            //ThreadStart threadStart = delegate
+            //{
+            //    instance.pathFinding.FindPath(request, instance.FinishedProcessingPath);
+            //};
 
-            threadStart.Invoke();
+            lock (instance.requests)
+            {
+                instance.requests.Enqueue(request);
+            }
         }
 
+        void ProcessRequest()
+        {
+            while (true)
+            {
+                int length = requests.Count;
+
+                lock (requests)
+                {
+                    for (int i = 0; i < length; ++i)
+                    {
+                        pathFinding.FindPath(requests.Dequeue(), instance.FinishedProcessingPath);
+                    }
+                }
+            }
+        }
         public void FinishedProcessingPath(PathResult result)
         {
             lock (results)
