@@ -27,6 +27,20 @@ namespace CoreScript.Utility
             }
         }
 
+        public static Vector2 V3ToV2(Vector3 v3, PositionSpace positionSpace)
+        {
+            switch (positionSpace)
+            {
+                case PositionSpace.xy:
+                    return new Vector2(v3.x, v3.y);
+                case PositionSpace.xz:
+                    return new Vector2(v3.x, v3.z);
+                case PositionSpace.yz:
+                    return new Vector2(v3.y, v3.z);
+            }
+            return Vector2.zero;
+        }
+
         public static void CombineList<T>(ref List<T> existingList, List<T> newList)
         {
             foreach (var item in newList)

@@ -27,9 +27,9 @@ namespace CoreScript.SaveLoad
             get
             {
 #if UNITY_EDITOR
-                string SaveFileDirectory = Path.Combine(Application.dataPath, "Resources/Save Files/");
+                string SaveFileDirectory = System.IO.Path.Combine(Application.dataPath, "Resources/Save Files/");
 #else
-                string SaveFileDirectory = Path.Combine(Application.persistentDataPath, "Save Files/");
+                string SaveFileDirectory = System.IO.Path.Combine(Application.persistentDataPath, "Save Files/");
 #endif
                 if (!Directory.Exists(SaveFileDirectory))
                     Directory.CreateDirectory(SaveFileDirectory);
@@ -41,7 +41,7 @@ namespace CoreScript.SaveLoad
         {
             get
             {
-                string autoSaveFileDirectory = Path.Combine(SaveFileDirectory, "Auto Save/");
+                string autoSaveFileDirectory = System.IO.Path.Combine(SaveFileDirectory, "Auto Save/");
                 if (!Directory.Exists(autoSaveFileDirectory))
                     Directory.CreateDirectory(autoSaveFileDirectory);
 

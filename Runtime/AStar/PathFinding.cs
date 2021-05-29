@@ -9,29 +9,22 @@ namespace CoreScript.AStar
 {
     public class PathFinding : MonoBehaviour
     {
-        PathRequestManager requestManager;
         NodeGrid grid;
 
         private void Awake()
         {
-            requestManager = GetComponent<PathRequestManager>();
             grid = GetComponent<NodeGrid>();
         }
 
-        public void StartFindPath(Vector3 startPos, Vector3 endPos)
-        {
-            StartCoroutine(FindPath(startPos, endPos));
-        }
-
-        IEnumerator FindPath(Vector3 startPos, Vector3 endPos)
+        public void FindPath(PathRequest pathRequest, Action<PathResult> callback)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
             Vector3[] waypoints = new Vector3[0];
             bool success = false;
 
-            Node startNode = grid.NodeFromWorldPoint(startPos);
-            Node endNode = grid.NodeFromWorldPoint(endPos);
+            Node startNode = grid.NodeFromWorldPoint(pathRequest.pathStart);
+            Node endNode = grid.NodeFromWorldPoint(pathRequest.pathEnd);
 
             if (startNode.isWalkable && endNode.isWalkable)
             {
@@ -72,11 +65,14 @@ namespace CoreScript.AStar
                     }
                 }
             }
-            yield return null;
-            if (success)
-                waypoints = RetracePath(startNode, endNode);
 
-            requestManager.FinishedProcessingPath(waypoints, success);
+            if (success)
+            {
+                waypoints = RetracePath(startNode, endNode);
+                success = waypoints.Length > 0;
+            }
+
+            callback(new PathResult(waypoints, success, pathRequest.callback));
         }
 
         Vector3[] RetracePath(Node startNode, Node endNode)
