@@ -40,11 +40,6 @@ namespace CoreScript.AStar
 
         public static void RequestPath(PathRequest request)
         {
-            //ThreadStart threadStart = delegate
-            //{
-            //    instance.pathFinding.FindPath(request, instance.FinishedProcessingPath);
-            //};
-
             lock (instance.requests)
             {
                 instance.requests.Enqueue(request);
