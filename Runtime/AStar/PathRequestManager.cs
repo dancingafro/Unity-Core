@@ -88,12 +88,14 @@ namespace CoreScript.AStar
     {
         public Vector3 pathStart;
         public Vector3 pathEnd;
+        public bool needLand;
         public Action<Vector3[], bool> callback;
 
-        public PathRequest(Vector3 pathStart, Vector3 pathEnd, Action<Vector3[], bool> callback)
+        public PathRequest(Vector3 pathStart, Vector3 pathEnd, bool needLand, Action<Vector3[], bool> callback)
         {
             this.pathStart = pathStart;
             this.pathEnd = pathEnd;
+            this.needLand = needLand;
             this.callback = callback;
         }
     }

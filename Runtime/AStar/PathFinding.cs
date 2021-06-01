@@ -11,6 +11,7 @@ namespace CoreScript.AStar
     {
         NodeGrid grid;
 
+        Stopwatch sw = new Stopwatch();
         private void Awake()
         {
             grid = GetComponent<NodeGrid>();
@@ -18,7 +19,6 @@ namespace CoreScript.AStar
 
         public void FindPath(PathRequest pathRequest, Action<PathResult> callback)
         {
-            Stopwatch sw = new Stopwatch();
             sw.Start();
             Vector3[] waypoints = new Vector3[0];
             bool success = false;
@@ -47,7 +47,7 @@ namespace CoreScript.AStar
 
                     foreach (var item in grid.GetNeighbours(currentNode))
                     {
-                        if (closedSet.Contains(item) || !item.isWalkable)
+                        if (closedSet.Contains(item) || !item.isWalkable || (pathRequest.needLand && !item.gotLand))
                             continue;
 
                         int newCost = currentNode.gCost + GetDistance(currentNode, item) + item.weights;
@@ -68,14 +68,14 @@ namespace CoreScript.AStar
 
             if (success)
             {
-                waypoints = RetracePath(startNode, endNode);
+                waypoints = RetracePath(pathRequest, startNode, endNode);
                 success = waypoints.Length > 0;
             }
 
             callback(new PathResult(waypoints, success, pathRequest.callback));
         }
 
-        Vector3[] RetracePath(Node startNode, Node endNode)
+        Vector3[] RetracePath(PathRequest request, Node startNode, Node endNode)
         {
             List<Node> path = new List<Node>();
             Node currentNode = endNode;
@@ -92,11 +92,11 @@ namespace CoreScript.AStar
         Vector3[] SimplifyPath(List<Node> path)
         {
             List<Vector3> waypoints = new List<Vector3>();
-            Vector2 dirOld = Vector2.zero;
+            Vector3 dirOld = Vector3.zero;
 
             for (int i = 1; i < path.Count; ++i)
             {
-                Vector2 dirNew = new Vector2(path[i - 1].gridX - path[i].gridX, path[i - 1].gridY - path[i].gridY);
+                Vector3 dirNew = path[i - 1].grid - path[i].grid;
                 if (dirNew != dirOld)
                     waypoints.Add(path[i].worldPos);
 
@@ -108,13 +108,14 @@ namespace CoreScript.AStar
 
         int GetDistance(Node nodeA, Node nodeB)
         {
-            int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
-            int dstY = Mathf.Abs(nodeA.gridY - nodeB.gridY);
+            int dstX = Mathf.Abs(nodeB.grid.x - nodeA.grid.x);
+            int dstY = Mathf.Abs(nodeB.grid.y - nodeA.grid.y);
+            int dstZ = Mathf.Abs(nodeB.grid.z - nodeA.grid.z);
 
-            if (dstX > dstY)
-                return 14 * dstY + 10 * (dstX - dstY);
+            //if (dstX > dstY)
+            //    return 14 * dstY + 10 * (dstX - dstY);
 
-            return 14 * dstX + 10 * (dstY - dstX);
+            return Mathf.RoundToInt(Mathf.Sqrt(dstX * dstX + dstY * dstY + dstZ * dstZ)); //14 * dstX + 10 * (dstY - dstX);
         }
     }
 }

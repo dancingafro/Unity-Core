@@ -7,26 +7,26 @@ namespace CoreScript.AStar
 {
     public class Node : IHeapItem<Node>
     {
-        public bool isWalkable;
+        public bool isWalkable, gotLand;
         public Vector3 worldPos;
 
         public Node Parent;
 
-        public int gridX, gridY;
+        public Vector3Int grid;
         public int gCost, hCost;
         public int weights;
         int heapIndex;
-        public int fCost
+        public int FCost
         {
             get { return gCost + hCost; }
         }
 
-        public Node(bool isWalkable, Vector3 worldPos, int gridX, int gridY, int weights)
+        public Node(bool isWalkable, bool gotLand, Vector3 worldPos, Vector3Int grid, int weights)
         {
             this.isWalkable = isWalkable;
+            this.gotLand = gotLand;
             this.worldPos = worldPos;
-            this.gridX = gridX;
-            this.gridY = gridY;
+            this.grid = grid;
             this.weights = weights;
         }
 
@@ -38,7 +38,7 @@ namespace CoreScript.AStar
 
         public int CompareTo(Node other)
         {
-            int compare = fCost.CompareTo(other.fCost);
+            int compare = FCost.CompareTo(other.FCost);
             if (compare == 0)
                 compare = hCost.CompareTo(other.hCost);
 
