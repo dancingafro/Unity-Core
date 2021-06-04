@@ -12,13 +12,19 @@ namespace CoreScript.AStar
         Queue<PathRequest> requests = new Queue<PathRequest>();
         static PathRequestManager instance;
         PathFinding pathFinding;
-
+        Thread thread;
+        bool started = true;
         private void Awake()
         {
-            Thread thread = new Thread(ProcessRequest);
-            thread.Start();
+            thread = new Thread(ProcessRequest);
             instance = this;
             pathFinding = GetComponent<PathFinding>();
+        }
+
+        void OnEnable()
+        {
+            thread.Start();
+            started = true;
         }
 
         private void Update()
@@ -48,7 +54,7 @@ namespace CoreScript.AStar
 
         void ProcessRequest()
         {
-            while (true)
+            while (started)
             {
                 int length = requests.Count;
 
@@ -69,6 +75,10 @@ namespace CoreScript.AStar
             }
         }
 
+        private void OnDisable()
+        {
+            started = false;
+        }
     }
     public struct PathResult
     {

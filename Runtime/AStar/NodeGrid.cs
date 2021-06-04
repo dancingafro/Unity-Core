@@ -16,18 +16,32 @@ namespace CoreScript.AStar
         public Vector3 gridWorldSize;
         public float nodeRadius;
         Node[,,] grid;
+        Queue<MinMax3DInt> requests = new Queue<MinMax3DInt>();
+
+        static NodeGrid instance;
 
         float nodeDiameter;
         Vector3Int gridSize;
-        int minWeight = int.MaxValue;
-        int maxWeight = int.MinValue;
+        Vector3 gridWorldBtmLeft;
+        MinMaxInt minMaxWeight = new MinMaxInt();
 
+        int blurBrushSize = 3;
+        bool gridModified = false;
+        bool threadIsAlive = false;
         public bool DebugMode { get { return debugMode; } }
+        bool GotRequests { get { return debugMode; } }
 
         public int MaxSize { get { return gridSize.x * gridSize.y * gridSize.z; } }
 
-        void Awake()
+        private void Awake()
         {
+            if (grid == null)
+                Init();
+        }
+
+        public void Init()
+        {
+            instance = this;
             nodeDiameter = nodeRadius * 2;
             gridSize = new Vector3Int(Mathf.RoundToInt(gridWorldSize.x / nodeDiameter), Mathf.RoundToInt(gridWorldSize.y / nodeDiameter), Mathf.RoundToInt(gridWorldSize.z / nodeDiameter));
 
@@ -37,102 +51,138 @@ namespace CoreScript.AStar
                 walkableRegionsDictionary.Add((int)Mathf.Log(item.terrainMask.value, 2), item.terrainWeights);
             }
 
+            gridWorldBtmLeft = transform.position - new Vector3(gridWorldSize.x * .5f, gridWorldSize.y * .5f, gridWorldSize.z * .5f);
+
             CreateGrid();
         }
 
+        void LoopGrid(Vector3Int min, Vector3Int max)
+        {
+            for (int y = min.y; y < max.y; ++y)
+                for (int x = min.x; x < max.x; ++x)
+                    for (int z = min.z; z < max.z; z++)
+                        UpdateNodeGrid(x, y, z);
+        }
 
         void CreateGrid()
         {
             grid = new Node[gridSize.x, gridSize.y, gridSize.z];
-
-            Vector3 worldBtmLeft = transform.position - new Vector3(gridWorldSize.x * .5f, gridWorldSize.y * .5f, gridWorldSize.z * .5f);
-
-            for (int y = 0; y < gridSize.y; ++y)
-            {
-                Vector3 yOffset = Vector3.up * (y * nodeDiameter + nodeRadius);
-                for (int x = 0; x < gridSize.x; ++x)
-                {
-                    Vector3 xOffset = Vector3.right * (x * nodeDiameter + nodeRadius);
-                    for (int z = 0; z < gridSize.z; z++)
-                    {
-                        Vector3 worldPoint = worldBtmLeft + xOffset + yOffset + Vector3.forward * (z * nodeDiameter + nodeRadius);
-                        int weights = 0;
-                        bool walkable = CheckIsWalkable(worldPoint);
-
-                        Ray ray = new Ray(worldPoint + Vector3.up * nodeRadius, Vector3.down);
-                        bool gotLand = Physics.Raycast(ray, out RaycastHit hit, nodeDiameter, walkableMask);
-
-                        if (gotLand)
-                            walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out weights);
-
-                        if (!walkable)
-                            weights += obsticalPenalty;
-
-                        grid[x, y, z] = new Node(walkable, gotLand, worldPoint, new Vector3Int(x, y, z), weights);
-                    }
-                }
-            }
-            BlurPenaltyMap(3);
+            LoopGrid(Vector3Int.zero, gridSize);
+            BlurPenaltyMap();
         }
 
-        bool CheckIsWalkable(Vector3 worldPoint)
+        private void LateUpdate()
+        {
+            for (int i = 0; i < requests.Count; ++i)
+            {
+                MinMax3DInt request = requests.Dequeue();
+                LoopGrid(request.Min - Vector3Int.one, request.Max + Vector3Int.one);
+                gridModified = true;
+            }
+            if (gridModified)
+            {
+                gridModified = false;
+                BlurPenaltyMap();
+            }
+        }
+
+        public void UpdateNodeGrid(int x, int y, int z)
+        {
+            Vector3 worldPoint = gridWorldBtmLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.up * (y * nodeDiameter + nodeRadius) + Vector3.forward * (z * nodeDiameter + nodeRadius);
+            int weights = 0;
+            bool walkable = CheckIsWalkable(worldPoint, x, y, z);
+
+            Ray ray = new Ray(worldPoint + Vector3.up * nodeRadius, Vector3.down);
+
+            bool gotLand = Physics.Raycast(ray, out RaycastHit hit, nodeDiameter, walkableMask);
+
+            if (gotLand)
+                walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out weights);
+
+            if (!walkable)
+                weights += obsticalPenalty;
+
+            grid[x, y, z] = new Node(walkable, gotLand, worldPoint, new Vector3Int(x, y, z), weights);
+        }
+
+        public static void ModifyGridNode(MinMax3DInt request)
+        {
+            instance.requests.Enqueue(request);
+        }
+
+        bool CheckIsWalkable(Vector3 worldPoint, int x, int y, int z)
         {
             bool isWalkable = !Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask);
+
+            if (!isWalkable)
+            {
+                Collider[] temp = Physics.OverlapSphere(worldPoint, nodeRadius - .001f, unwalkableMask);
+
+                foreach (var item in temp)
+                {
+                    if (!item.TryGetComponent(out Destructible destructible))
+                        continue;
+
+                    destructible.AddCoord(new Vector3Int(x, y, z));
+                }
+            }
 
             return isWalkable;
         }
 
-        void BlurPenaltyMap(int blurSize)
+        void BlurPenaltyMap()
         {
-            int kernelSize = blurSize * 2 + 1;
-            int kernalExtents = (int)((kernelSize - 1) * .5f);
-
-            int[,] penaltiesHorizontalPass = new int[gridSize.x, gridSize.z];
-            int[,] penaltiesForwardPass = new int[gridSize.x, gridSize.z];
-
-            for (int y = 0; y < gridSize.y; ++y)
+            lock (grid)
             {
-                for (int z = 0; z < gridSize.z; ++z)
+                int kernelSize = blurBrushSize * 2 + 1;
+                int kernalExtents = (int)((kernelSize - 1) * .5f);
+
+                int[,] penaltiesHorizontalPass = new int[gridSize.x, gridSize.z];
+                int[,] penaltiesForwardPass = new int[gridSize.x, gridSize.z];
+
+                for (int y = 0; y < gridSize.y; ++y)
                 {
-                    for (int x = -kernalExtents; x <= kernalExtents; ++x)
+                    for (int z = 0; z < gridSize.z; ++z)
                     {
-                        int sampleX = Mathf.Clamp(x, 0, kernalExtents);
-                        penaltiesHorizontalPass[0, z] += grid[sampleX, y, z].weights;
+                        for (int x = -kernalExtents; x <= kernalExtents; ++x)
+                        {
+                            int sampleX = Mathf.Clamp(x, 0, kernalExtents);
+                            penaltiesHorizontalPass[0, z] += grid[sampleX, y, z].weights;
+                        }
+
+                        for (int x = 1; x < gridSize.x; ++x)
+                        {
+                            int removeIndex = Mathf.Clamp(x - kernalExtents - 1, 0, gridSize.x);
+                            int addIndex = Mathf.Clamp(x + kernalExtents, 0, gridSize.x - 1);
+                            penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, y, z].weights + grid[addIndex, y, z].weights;
+                        }
                     }
 
-                    for (int x = 1; x < gridSize.x; ++x)
+                    for (int x = 0; x < gridSize.x; ++x)
                     {
-                        int removeIndex = Mathf.Clamp(x - kernalExtents - 1, 0, gridSize.x);
-                        int addIndex = Mathf.Clamp(x + kernalExtents, 0, gridSize.x - 1);
-                        penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, y, z].weights + grid[addIndex, y, z].weights;
+                        for (int z = -kernalExtents; z <= kernalExtents; ++z)
+                        {
+                            int sampleY = Mathf.Clamp(z, 0, kernalExtents);
+                            penaltiesForwardPass[x, 0] += penaltiesHorizontalPass[x, sampleY];
+                        }
+
+                        int blurredWeights = Mathf.RoundToInt((float)penaltiesForwardPass[x, 0] / (kernelSize * kernelSize));
+                        grid[x, y, 0].weights = blurredWeights;
+
+                        for (int z = 1; z < gridSize.z; ++z)
+                        {
+                            int removeIndex = Mathf.Clamp(z - kernalExtents - 1, 0, gridSize.z);
+                            int addIndex = Mathf.Clamp(z + kernalExtents, 0, gridSize.z - 1);
+                            penaltiesForwardPass[x, z] = penaltiesForwardPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
+                            blurredWeights = Mathf.RoundToInt((float)penaltiesForwardPass[x, z] / (kernelSize * kernelSize));
+                            grid[x, y, z].weights = blurredWeights;
+
+                            minMaxWeight.AddValue(blurredWeights);
+                        }
                     }
                 }
-
-                for (int x = 0; x < gridSize.x; ++x)
-                {
-                    for (int z = -kernalExtents; z <= kernalExtents; ++z)
-                    {
-                        int sampleY = Mathf.Clamp(z, 0, kernalExtents);
-                        penaltiesForwardPass[x, 0] += penaltiesHorizontalPass[x, sampleY];
-                    }
-
-                    int blurredWeights = Mathf.RoundToInt((float)penaltiesForwardPass[x, 0] / (kernelSize * kernelSize));
-                    grid[x, y, 0].weights = blurredWeights;
-
-                    for (int z = 1; z < gridSize.z; ++z)
-                    {
-                        int removeIndex = Mathf.Clamp(z - kernalExtents - 1, 0, gridSize.z);
-                        int addIndex = Mathf.Clamp(z + kernalExtents, 0, gridSize.z - 1);
-                        penaltiesForwardPass[x, z] = penaltiesForwardPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
-                        blurredWeights = Mathf.RoundToInt((float)penaltiesForwardPass[x, z] / (kernelSize * kernelSize));
-                        grid[x, y, z].weights = blurredWeights;
-
-                        if (blurredWeights < minWeight)
-                            minWeight = blurredWeights;
-                        if (blurredWeights > maxWeight)
-                            maxWeight = blurredWeights;
-                    }
-                }
+                gridModified = false;
+                threadIsAlive = false;
             }
         }
 
@@ -179,12 +229,11 @@ namespace CoreScript.AStar
                     if (!item.gotLand)
                         continue;
 
-                    Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(minWeight, maxWeight, item.weights));
+                    Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(minMaxWeight.Min, minMaxWeight.Max, item.weights));
                     Gizmos.color = item.isWalkable ? Gizmos.color : Color.red;
                     Gizmos.DrawCube(item.worldPos, Vector3.one * (nodeDiameter - .1f));
                 }
             }
-
         }
     }
 

@@ -79,4 +79,58 @@ namespace CoreScript
             Max = Mathf.Max(Max, v);
         }
     }
+
+    public class MinMax3DInt
+    {
+        public Vector3Int Min { get; private set; }
+        public Vector3Int Max { get; private set; }
+
+        public MinMax3DInt()
+        {
+            Min = Vector3Int.one * int.MaxValue;
+            Max = Vector3Int.one * int.MinValue;
+        }
+
+        public void AddValue(Vector3Int v)
+        {
+            Min = new Vector3Int(Mathf.Min(Min.x, v.x), Mathf.Min(Min.y, v.y), Mathf.Min(Min.z, v.z));
+            Max = new Vector3Int(Mathf.Max(Max.x, v.x), Mathf.Max(Max.y, v.y), Mathf.Max(Max.z, v.z));
+        }
+    }
+
+    public class MinMax2DInt
+    {
+        public Vector2Int Min { get; private set; }
+        public Vector2Int Max { get; private set; }
+
+        public MinMax2DInt()
+        {
+            Min = Vector2Int.one * int.MaxValue;
+            Max = Vector2Int.one * int.MinValue;
+        }
+
+        public void AddValue(Vector2Int v)
+        {
+            Min = new Vector2Int(Mathf.Min(Min.x, v.x), Mathf.Min(Min.y, v.y));
+            Max = new Vector2Int(Mathf.Max(Max.x, v.x), Mathf.Max(Max.y, v.y));
+        }
+    }
+
+    public class MinMaxInt
+    {
+        public int Min { get; private set; }
+        public int Max { get; private set; }
+
+        public MinMaxInt()
+        {
+            Min = int.MaxValue;
+            Max = int.MinValue;
+        }
+
+        public void AddValue(int v)
+        {
+            Min = Mathf.Min(Min, v);
+            Max = Mathf.Max(Max, v);
+        }
+    }
 }
